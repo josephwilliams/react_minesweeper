@@ -33,28 +33,40 @@ export default class Board {
     }
   }
 
-  lostGame () {
-    this.props.board.forEach(row => {
-      row.forEach(tile => {
-        if (tile.hasBomb && tile.explored)
-          return true;
-      });
-    });
+  flattenedGrid () {
+    return (
+      this.grid.reduce((a, b) => {
+        return a.concat(b);
+      })
+    );
+  }
 
-    this.message = "you lose!";
-    return false;
+  isOver (tile) {
+    return tile.hasBomb || this.wonGame();
   }
 
   wonGame () {
-    var avoidedBombs = 0;
-    this.props.board.forEach(row => {
-      row.forEach(tile => {
-        if (tile.hasBomb && !tile.explored)
-          avoidedBombs++;
+    var exploredTiles = 0;
+    var flattened = this.flattenedGrid();
+    for (let i = 0; i < flattened.length; i++) {
+      let tile = flattened[i];
+      if (!tile.hasBomb && tile.explored)
+        exploredTiles++;
+    }
+
+    return exploredTiles === ((this.gridSize * this.gridSize) - this.numBombs);
+  }
+
+  endGame () {
+    this.message = this.wonGame() ? "you win!" : "you lose!";
+    this.showBoard();
+  }
+
+  showBoard () {
+    this.grid.forEach(row => {
+      row.map(tile => {
+        tile.explore();
       });
     });
-
-    this.message = "you win!";
-    return avoidedBombs === this.numBombs;
   }
 }

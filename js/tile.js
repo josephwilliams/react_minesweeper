@@ -18,10 +18,14 @@ export default class Tile {
     this.flagged = !this.flagged;
   }
 
+  explore () {
+    this.explored = true;
+  }
+
   withinBounds (pos) {
     let gridSize = this.board.gridSize;
-    return pos[0] > 0 && pos[0] < gridSize &&
-           pos[1] > 0 && pos[1] < gridSize;
+    return pos[0] >= 0 && pos[0] < gridSize &&
+           pos[1] >= 0 && pos[1] < gridSize;
   }
 
   adjacentTiles () {
@@ -49,10 +53,16 @@ export default class Tile {
   }
 
   minesweep () {
-    this.explored = true;
-    if (this.hasBomb) {
-      this.board.endGame();
+    if (this.flagged || this.hasBomb) {
+      return this;
+    }
+
+    this.explore();
+    this.board.message = "[" + this.pos + "] explored!";
+    if (this.countAdjacentBombs() === 0 && !this.hasBomb) {
+      this.adjacentTiles().forEach(tile => {
+        tile.minesweep();
+      });
     }
   }
-
 }

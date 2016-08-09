@@ -7,14 +7,14 @@ body {
 
 h1 {
   font-family: 'Unica One', cursive;
-    margin: 0 auto;
-    text-shadow: 0px 0px 20px rgba(151, 69, 69, 0.72);
+  margin: 0 auto;
+  text-shadow: 0px 0px 20px rgba(151, 69, 69, 0.72);
 }
 
 p {
   font-family: 'Overlock', cursive;
   margin: 0 auto;
-  margin-bottom: 5px;
+  margin-bottom: 10px;
 }
 
 .game-container {
