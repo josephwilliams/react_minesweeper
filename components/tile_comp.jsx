@@ -1,4 +1,5 @@
 import React, {Component} from 'react';
+import FontAwesome from 'react-fontawesome';
 
 export default class Tile extends React.Component {
   handleClick (event) {
@@ -9,27 +10,24 @@ export default class Tile extends React.Component {
   render () {
     var klass, content;
     if (this.props.tile.explored && this.props.tile.hasBomb) {
-      content = "&#128163;";
       klass = "tile-bomb";
+      content = "\uD83D\uDCA3";
     } else if (this.props.tile.flagged) {
-      console.log('flagged');
-      content = "\u2691";
       klass = "tile-flagged";
+      content = "\u2691";
     } else if (this.props.tile.explored) {
-      content = this.props.tile.countAdjacentBombs();
       klass = "tile-explored";
+      content = this.props.tile.countAdjacentBombs();
     } else {
-      content = null;
       klass = "tile-unexplored";
+      content = null;
     }
 
     return (
-      <div className="tile-container">
-        <div className={klass} onClick={this.handleClick.bind(this)}>
-           <div className="tile-content">
-             {content}
-           </div>
-        </div>
+      <div className={klass} onClick={this.handleClick.bind(this)}>
+         <div className="tile-content">
+           {content}
+         </div>
       </div>
     )
   }

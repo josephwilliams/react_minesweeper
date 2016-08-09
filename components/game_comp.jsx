@@ -13,7 +13,7 @@ export default class Game extends React.Component {
     if (flagged) {
       tile.toggleFlag();
     } else {
-      tile.explore();
+      tile.minesweep();
     }
 
     this.setState({ board: this.state.board });

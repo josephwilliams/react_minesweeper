@@ -32,4 +32,29 @@ export default class Board {
       }
     }
   }
+
+  lostGame () {
+    this.props.board.forEach(row => {
+      row.forEach(tile => {
+        if (tile.hasBomb && tile.explored)
+          return true;
+      });
+    });
+
+    this.message = "you lose!";
+    return false;
+  }
+
+  wonGame () {
+    var avoidedBombs = 0;
+    this.props.board.forEach(row => {
+      row.forEach(tile => {
+        if (tile.hasBomb && !tile.explored)
+          avoidedBombs++;
+      });
+    });
+
+    this.message = "you win!";
+    return avoidedBombs === this.numBombs;
+  }
 }
