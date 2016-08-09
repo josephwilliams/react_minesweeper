@@ -5,6 +5,7 @@ export default class Tile {
     this.hasBomb = false;
     this.flagged = false;
     this.explored = false;
+    this.nearbyBombs = 0;
     this.deltas = [[-1,-1],[-1,0],[-1,1],[0,-1],
                    [0,1],[1,-1],[1,0],[1,1]];
   }

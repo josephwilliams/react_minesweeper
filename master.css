@@ -1,9 +1,40 @@
 body {
-  background: #f1f1f1;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
 }
 
 .game-container {
-  width: 500px;
-  height: 500px;
-  border: solid 1px black;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.board-container {
+  background: #f1f1f1;
+}
+
+.board-container .row {
+  /*min-height: 50px;*/
+  display: flex;
+}
+
+.tile-container {
+  border: solid 4px #e1e1e1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 50px;
+  min-height: 50px;
+  border-style: outset;
+}
+
+.tile-unexplored {
+  cursor: pointer;
+}
+
+.tile-unexplored:hover {
+  background: #f1f1f1;
 }

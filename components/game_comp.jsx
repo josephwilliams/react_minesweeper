@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {Component} from 'react';
 import BoardComponent from './board_comp';
 import Board from '../js/board.js';
 
@@ -21,7 +21,7 @@ export default class Game extends React.Component {
   render () {
     return (
       <div className="game-container">
-        <Board
+        <BoardComponent
           board={this.state.board}
           updateBoard={this.updateBoard}
         />
