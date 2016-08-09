@@ -34,7 +34,7 @@ export default class Board {
   }
 
   isOver (tile) {
-    return tile.hasBomb || this.wonGame();
+    return this.lostGame() || this.wonGame();
   }
 
   wonGame () {
@@ -48,6 +48,18 @@ export default class Board {
 
     let totalTiles = this.gridSize * this.gridSize;
     return exploredTiles === totalTiles - this.numBombs;
+  }
+
+  lostGame () {
+    var bombed = false;
+    this.grid.forEach(row => {
+      row.forEach(tile => {
+        if (tile.hasBomb && tile.explored)
+          bombed = true;
+      });
+    });
+
+    return bombed;
   }
 
   endGame () {
