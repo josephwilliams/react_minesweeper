@@ -1,9 +1,24 @@
 ## Minesweeper built with React.js and Javascript
 ### Optimizing Minesweeper
 
-My first attempt at minesweeper with React.js and Javascript worked as intended (more or less), but was far from optimized and had fundamental issues with how `state` and `props` are intended to operate.
+My first attempt at minesweeper with React.js and Javascript worked as intended (more or less), but was far from optimized and had fundamental issues with how `state` and `props` are intended to operate within `React.js`.
 
 Here's my initial setup, pre-refactoring.
+
+* I rendered react through a div on a static HTML page using NPMs through a `bundle.js` file with `webpack`.
+
+```javascript
+import React, {Component} from 'react';
+import ReactDOM from 'react-dom';
+import Game from './components/game_comp';
+
+document.addEventListener('DOMContentLoaded', () => {
+  const root = document.getElementById('root');
+  ReactDOM.render(<Game />, root)
+});
+```
+
+##### My Original Components and JS Files
 My `Game` Component:
 ```javascript
 export default class Game extends React.Component {
