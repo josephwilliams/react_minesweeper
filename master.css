@@ -6,10 +6,22 @@ body {
   height: 100vh;
 }
 
+h1 {
+  font-family: 'Unica One', cursive;
+  margin: 0 auto;
+}
+
+p {
+  font-family: 'Overlock', cursive;
+  margin: 0 auto;
+  margin-bottom: 5px;
+}
+
 .game-container {
   display: flex;
   justify-content: center;
   align-items: center;
+  flex-direction: column;
 }
 
 .board-container {
@@ -17,7 +29,6 @@ body {
 }
 
 .board-container .row {
-  /*min-height: 50px;*/
   display: flex;
 }
 
@@ -31,10 +42,18 @@ body {
   border-style: outset;
 }
 
+.tile-content {
+  font-size: 30px;
+  color: #aa3e3e;
+  cursor: default;
+}
+
 .tile-unexplored {
   cursor: pointer;
+  width: 100%;
+  height: 100%;
 }
 
 .tile-unexplored:hover {
-  background: #f1f1f1;
+  background: #fcf6eb;
 }

@@ -15,7 +15,7 @@ export default class Tile {
   }
 
   toggleFlag () {
-    this.flagged = !this.flagged;
+    this.flagged = true;
   }
 
   explore () {

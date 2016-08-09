@@ -5,6 +5,7 @@ export default class Board {
     this.gridSize = gridSize;
     this.numBombs = numBombs ? numBombs : this.gridSize;
     this.grid = [];
+    this.message = "let's begin!";
     this.generateGrid();
     this.plantBombs();
   }
