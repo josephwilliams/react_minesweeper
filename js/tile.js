@@ -53,7 +53,7 @@ export default class Tile {
   }
 
   minesweep () {
-    if (this.flagged || this.hasBomb) {
+    if (this.flagged || this.explored) {
       return this;
     }
 

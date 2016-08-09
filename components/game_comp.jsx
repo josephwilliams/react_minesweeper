@@ -10,14 +10,13 @@ export default class Game extends React.Component {
   }
 
   updateBoard (tile, flagged) {
-    console.log(tile);
-    if (!this.state.board.isOver(tile)) {
-      if (flagged) {
-        tile.toggleFlag();
-      } else {
-        tile.minesweep();
-      }
+    if (flagged) {
+      tile.toggleFlag();
     } else {
+      tile.minesweep();
+    }
+
+    if (this.state.board.isOver(tile)) {
       this.state.board.endGame();
     }
 

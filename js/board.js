@@ -33,28 +33,21 @@ export default class Board {
     }
   }
 
-  flattenedGrid () {
-    return (
-      this.grid.reduce((a, b) => {
-        return a.concat(b);
-      })
-    );
-  }
-
   isOver (tile) {
     return tile.hasBomb || this.wonGame();
   }
 
   wonGame () {
     var exploredTiles = 0;
-    var flattened = this.flattenedGrid();
-    for (let i = 0; i < flattened.length; i++) {
-      let tile = flattened[i];
-      if (!tile.hasBomb && tile.explored)
-        exploredTiles++;
-    }
+    this.grid.forEach(row => {
+      row.forEach(tile => {
+        if (!tile.hasBomb && tile.explored)
+          exploredTiles++;
+      });
+    });
 
-    return exploredTiles === ((this.gridSize * this.gridSize) - this.numBombs);
+    let totalTiles = this.gridSize * this.gridSize;
+    return exploredTiles === totalTiles - this.numBombs;
   }
 
   endGame () {
