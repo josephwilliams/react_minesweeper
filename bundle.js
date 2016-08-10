@@ -21521,11 +21521,9 @@
 	    value: function updateBoard(pos, flagged) {
 	      if (flagged) {
 	        this.state.board.toggleFlag(pos);
-	      } else {}
-	
-	      // if (this.state.board.isOver(tile)) {
-	      //   this.state.board.endGame();
-	      // }
+	      } else {
+	        this.state.board.beginExploration(pos);
+	      }
 	
 	      this.setState({ board: this.state.board });
 	    }
@@ -21915,7 +21913,6 @@
 	      //   newGrid.push(row);
 	      //   i++;
 	      // }
-	
 	      this.grid = newGrid;
 	    }
 	  }, {
@@ -21936,33 +21933,24 @@
 	      var totalTiles = this.gridSize * this.gridSize;
 	      return exploredTiles === totalTiles - this.numBombs;
 	    }
-	  }, {
-	    key: "lost",
-	    value: function lost() {
-	      var bombed = false;
-	      this.grid.forEach(function (row) {
-	        row.forEach(function (tile) {
-	          if (tile.hasBomb && tile.explored) bombed = true;
-	        });
-	      });
 	
-	      return bombed;
-	    }
+	    // lost () {
+	    //   var bombed = false;
+	    //   this.grid.forEach(row => {
+	    //     row.forEach(tile => {
+	    //       if (tile.hasBomb && tile.explored)
+	    //         bombed = true;
+	    //     });
+	    //   });
+	    //
+	    //   return bombed;
+	    // }
+	
 	  }, {
 	    key: "endGame",
 	    value: function endGame() {
 	      this.message = this.won() ? "you win!" : "you lose!";
-	      // this.showBoard();
 	    }
-	
-	    // showBoard () {
-	    //   this.grid.forEach(row => {
-	    //     row.map(tile => {
-	    //       tile.explore();
-	    //     });
-	    //   });
-	    // }
-	
 	  }, {
 	    key: "withinBounds",
 	    value: function withinBounds(pos) {
@@ -22002,21 +21990,35 @@
 	      var col = pos[1];
 	      this.grid[row][col] = this.grid[row][col] === "" ? true : "";
 	    }
+	  }, {
+	    key: "beginExploration",
+	    value: function beginExploration(pos) {
+	      var tile = this.grid[pos[0]][pos[1]];
+	      if (tile === 0) {
+	        this.message = "you lose!";
+	        this.gameState = false;
+	      } else {
+	        this.explore(pos);
+	      }
+	    }
+	  }, {
+	    key: "explore",
+	    value: function explore(pos) {
+	      var _this2 = this;
 	
-	    // minesweep () {
-	    //   if (this.flagged || this.explored) {
-	    //     return this;
-	    //   }
-	    //
-	    //   this.explore();
-	    //   this.board.message = "[" + this.pos + "] explored!";
-	    //   if (this.adjacentBombCount() === 0 && !this.hasBomb) {
-	    //     this.adjacentTiles().forEach(tile => {
-	    //       tile.minesweep();
-	    //     });
-	    //   }
-	    // }
+	      var tile = this.grid[pos[0]][pos[1]];
+	      if (tile === "" || tile === "false") {
+	        return;
+	      }
 	
+	      this.grid[pos[0]][pos[1]] = false; // explored
+	      this.message = "[" + this.pos + "] explored!";
+	      if (this.adjacentBombCount(pos) === 0 && tile !== 0) {
+	        this.adjacentTiles().forEach(function (pos) {
+	          _this2.explore(pos);
+	        });
+	      }
+	    }
 	  }]);
 	
 	  return Board;

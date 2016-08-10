@@ -379,3 +379,5 @@ render () {
     }
   }
 ```
+
+Soon after, I began refactoring my mine minesweeping methods, the recursive `explore()` function, newly in my `Board` class.  `explore()` was to be enacted after `beginExploration()`, which would check for defeat conditions, e.g. clicking a bomb tile.  As a result, I got rid of my `lostGame()` function.

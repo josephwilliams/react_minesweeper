@@ -41,7 +41,6 @@ export default class Board {
     //   newGrid.push(row);
     //   i++;
     // }
-
     this.grid = newGrid;
   }
 
@@ -62,30 +61,21 @@ export default class Board {
     return exploredTiles === totalTiles - this.numBombs;
   }
 
-  lost () {
-    var bombed = false;
-    this.grid.forEach(row => {
-      row.forEach(tile => {
-        if (tile.hasBomb && tile.explored)
-          bombed = true;
-      });
-    });
-
-    return bombed;
-  }
+  // lost () {
+  //   var bombed = false;
+  //   this.grid.forEach(row => {
+  //     row.forEach(tile => {
+  //       if (tile.hasBomb && tile.explored)
+  //         bombed = true;
+  //     });
+  //   });
+  //
+  //   return bombed;
+  // }
 
   endGame () {
     this.message = this.won() ? "you win!" : "you lose!";
-    // this.showBoard();
   }
-
-  // showBoard () {
-  //   this.grid.forEach(row => {
-  //     row.map(tile => {
-  //       tile.explore();
-  //     });
-  //   });
-  // }
 
   withinBounds (pos) {
     return pos[0] >= 0 && pos[0] < this.gridSize &&
@@ -122,17 +112,28 @@ export default class Board {
     this.grid[row][col] = this.grid[row][col] === "" ? true : "";
   }
 
-  // minesweep () {
-  //   if (this.flagged || this.explored) {
-  //     return this;
-  //   }
-  //
-  //   this.explore();
-  //   this.board.message = "[" + this.pos + "] explored!";
-  //   if (this.adjacentBombCount() === 0 && !this.hasBomb) {
-  //     this.adjacentTiles().forEach(tile => {
-  //       tile.minesweep();
-  //     });
-  //   }
-  // }
+  beginExploration (pos) {
+    let tile = this.grid[pos[0]][pos[1]];
+    if (tile === 0) {
+      this.message = "you lose!";
+      this.gameState = false;
+    } else {
+      this.explore(pos);
+    }
+  }
+
+  explore (pos) {
+    let tile = this.grid[pos[0]][pos[1]];
+    if (tile === "" || tile === "false") {
+      return;
+    }
+
+    this.grid[pos[0]][pos[1]] = false; // explored
+    this.message = "[" + this.pos + "] explored!";
+    if (this.adjacentBombCount(pos) === 0 && tile !== 0) {
+      this.adjacentTiles().forEach(pos => {
+        this.explore(pos);
+      });
+    }
+  }
 }

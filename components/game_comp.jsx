@@ -13,12 +13,8 @@ export default class Game extends React.Component {
     if (flagged) {
       this.state.board.toggleFlag(pos);
     } else {
-
+      this.state.board.beginExploration(pos);
     }
-
-    // if (this.state.board.isOver(tile)) {
-    //   this.state.board.endGame();
-    // }
 
     this.setState({ board: this.state.board });
   }
