@@ -19,6 +19,7 @@ export default class Board extends React.Component {
         <TileComponent
           tile={tile}
           updateBoard={this.props.updateBoard}
+          gameState={this.props.gameState}
           key={[rowIdx, colIdx]}
           />
       );

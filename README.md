@@ -282,7 +282,7 @@ export default class Tile {
 ```
 
 #### Random Bomb Placement
-My first attempt - and terribly inefficient.  What would happen if the board had 1000 tiles and 999 bombs? There'd be countless duplicates.
+My first attempt at a random bomb placement - and terribly inefficient. What would happen if the board had 1000 tiles and 999 bombs? There'd be countless duplicates.
 ```javascript
 plantBombs () {
   var totalPlantedBombs = 0;
@@ -298,4 +298,80 @@ plantBombs () {
 }
 ```
 
-To refactor, I had to rethink
+To refactor, I had to rethink how I was setting up my `board.grid`.  
+
+I'm generating an Array, `grid`, whose length is the total number of tiles on the grid, `tileCount`, less the number of bombs, `this.numBombs` and filling it with `true`, the value I've chosen to represent an unexplored tile.
+
+I'm then creating an array of length `this.numBombs` that contain only `0`, my value for a bomb tile.
+
+```javascript
+generateGrid () {
+  let tileCount = this.gridSize * this.gridSize;
+  let grid = new Array(tileCount - this.numBombs).fill(true);
+  let bombTiles = new Array(this.numbBombs).fill(0);
+  this.grid = grid.concat(bombTiles);
+}
+
+scrambleGrid () {
+  let j = 0;
+  let temp;
+  for (let i = this.grid.length - 1; i > 0; i -= 1) {
+    j = Math.floor(Math.random() * (i + 1));
+    temp = this.grid[i];
+    this.grid[i] = this.grid[j];
+    this.grid[j] = temp;
+  }
+}
+```
+
+### New Tile States
+As mentioned, I'm using new values to represent tile states.  This will decrease coupling of inputs and potentially be more reliable.
+
+Because Javascript considers `0`, `""`, and `false` to be falsey, I can now check for unexplored tiles based on truthiness alone.
+
+```javascript
+flagged tile: "" // falsey
+explored tile: false // falsey
+unexplored tile: true // truthy
+bombed tile: 0 // falsey
+```
+
+### Changing the flow of the game
+I re-situated a lot of the logic.  Specifically, I changed the `withinBounds`, `adjacentTiles`, `countAdjacentBombs`, and `minesweep` functions from the `Tile` to the `Board` class.
+
+
+
+
+### Tile Deltas
+My original implementation re-instantiated `this.deltas`, an array of arrays, for each instantiated `Tile`. To fix this, I attached `DELTAS` to the `Board` class itself as a constant.
+
+```javascript
+Board.DELTAS = [[-1,-1],[-1,0],[-1,1],[0,-1],
+               [0,1],[1,-1],[1,0],[1,1]];
+```
+
+### Tile Component Overhaul
+My new `Tile` component's `render()` method was updated to fit the new tile distinction pattern.
+
+I've passed a `gameState` prop from the `Board` component to delineate how and when to expose bomb tiles.
+
+```javascript
+render () {
+  let klass, content = null;
+  if (this.props.tile === 0) {
+    if (this.props.gameState){
+      klass = "tile-unexplored";
+    } else {
+      klass = "tile-bomb";
+      content = "\uD83D\uDCA3";
+    }
+  } else if (this.props.tile === "") {
+    klass = "tile-flagged";
+    content = "\u2691";
+  } else if (this.props.tile === false) {
+    klass = "tile-explored";
+    content = this.props.tile.countAdjacentBombs();
+  } else {
+    klass = "tile-unexplored";
+  }
+```

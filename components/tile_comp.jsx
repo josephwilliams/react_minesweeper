@@ -8,19 +8,22 @@ export default class Tile extends React.Component {
   }
 
   render () {
-    var klass, content;
-    if (this.props.tile.explored && this.props.tile.hasBomb) {
-      klass = "tile-bomb";
-      content = "\uD83D\uDCA3";
-    } else if (this.props.tile.flagged) {
+    let klass, content = null;
+    if (this.props.tile === 0) {
+      if (this.props.gameState){
+        klass = "tile-unexplored";
+      } else {
+        klass = "tile-bomb";
+        content = "\uD83D\uDCA3";
+      }
+    } else if (this.props.tile === "") {
       klass = "tile-flagged";
       content = "\u2691";
-    } else if (this.props.tile.explored) {
+    } else if (this.props.tile === false) {
       klass = "tile-explored";
       content = this.props.tile.countAdjacentBombs();
     } else {
       klass = "tile-unexplored";
-      content = null;
     }
 
     return (

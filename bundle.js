@@ -21625,6 +21625,7 @@
 	        return _react2.default.createElement(_tile_comp2.default, {
 	          tile: tile,
 	          updateBoard: _this3.props.updateBoard,
+	          gameState: _this3.props.gameState,
 	          key: [rowIdx, colIdx]
 	        });
 	      });
@@ -21691,19 +21692,23 @@
 	  }, {
 	    key: 'render',
 	    value: function render() {
-	      var klass, content;
-	      if (this.props.tile.explored && this.props.tile.hasBomb) {
-	        klass = "tile-bomb";
-	        content = '💣';
-	      } else if (this.props.tile.flagged) {
+	      var klass = void 0,
+	          content = null;
+	      if (this.props.tile === 0) {
+	        if (this.props.gameState) {
+	          klass = "tile-unexplored";
+	        } else {
+	          klass = "tile-bomb";
+	          content = '💣';
+	        }
+	      } else if (this.props.tile === "") {
 	        klass = "tile-flagged";
 	        content = '⚑';
-	      } else if (this.props.tile.explored) {
+	      } else if (this.props.tile === false) {
 	        klass = "tile-explored";
 	        content = this.props.tile.countAdjacentBombs();
 	      } else {
 	        klass = "tile-unexplored";
-	        content = null;
 	      }
 	
 	      return _react2.default.createElement(
@@ -21871,43 +21876,59 @@
 	    this.numBombs = numBombs ? numBombs : this.gridSize;
 	    this.grid = [];
 	    this.message = "let's begin!";
+	    this.gameState = true;
+	    this.generateTiles();
+	    this.scrambleTiles();
 	    this.generateGrid();
-	    this.plantBombs();
+	    console.log(this.grid);
 	  }
 	
 	  _createClass(Board, [{
-	    key: "generateGrid",
-	    value: function generateGrid() {
-	      for (var i = 0; i < this.gridSize; i++) {
-	        this.grid.push([]);
-	        for (var j = 0; j < this.gridSize; j++) {
-	          var tile = new _tile2.default(this, [i, j]);
-	          this.grid[i].push(tile);
-	        }
+	    key: "generateTiles",
+	    value: function generateTiles() {
+	      var tileCount = this.gridSize * this.gridSize;
+	      var grid = new Array(tileCount - this.numBombs).fill(true);
+	      var bombTiles = new Array(this.numbBombs).fill(0);
+	      this.grid = grid.concat(bombTiles);
+	    }
+	  }, {
+	    key: "scrambleTiles",
+	    value: function scrambleTiles() {
+	      var j = 0;
+	      var temp = void 0;
+	      for (var i = this.grid.length - 1; i > 0; i -= 1) {
+	        j = Math.floor(Math.random() * (i + 1));
+	        temp = this.grid[i];
+	        this.grid[i] = this.grid[j];
+	        this.grid[j] = temp;
 	      }
 	    }
 	  }, {
-	    key: "plantBombs",
-	    value: function plantBombs() {
-	      var totalPlantedBombs = 0;
-	      while (totalPlantedBombs < this.numBombs) {
-	        var row = Math.floor(Math.random() * (this.gridSize - 1));
-	        var col = Math.floor(Math.random() * (this.gridSize - 1));
-	        var tile = this.grid[row][col];
-	        if (!tile.hasBomb) {
-	          tile.plantBomb();
-	          totalPlantedBombs++;
-	        }
+	    key: "generateGrid",
+	    value: function generateGrid() {
+	      var newGrid = [];
+	      // for (let i = 0; i < this.gridSize.length; i++) {
+	      //   let row = this.grid.slice(i * this.gridSize, i * this.gridSize * i);
+	      //   newGrid.push(row);
+	      // }
+	
+	      var i = 1;
+	      while (this.grid.length > 0) {
+	        var row = this.grid.splice(i * this.gridSize, i * this.gridSize * i);
+	        newGrid.push(row);
+	        i++;
 	      }
+	
+	      this.grid = newGrid;
 	    }
 	  }, {
 	    key: "isOver",
 	    value: function isOver(tile) {
-	      return this.lostGame() || this.wonGame();
+	      return this.lost() || this.won();
 	    }
 	  }, {
-	    key: "wonGame",
-	    value: function wonGame() {
+	    key: "won",
+	    value: function won() {
 	      var exploredTiles = 0;
 	      this.grid.forEach(function (row) {
 	        row.forEach(function (tile) {
@@ -21919,8 +21940,8 @@
 	      return exploredTiles === totalTiles - this.numBombs;
 	    }
 	  }, {
-	    key: "lostGame",
-	    value: function lostGame() {
+	    key: "lost",
+	    value: function lost() {
 	      var bombed = false;
 	      this.grid.forEach(function (row) {
 	        row.forEach(function (tile) {
@@ -21945,12 +21966,62 @@
 	        });
 	      });
 	    }
+	  }, {
+	    key: "withinBounds",
+	    value: function withinBounds(pos) {
+	      return pos[0] >= 0 && pos[0] < this.gridSize && pos[1] >= 0 && pos[1] < this.gridSize;
+	    }
+	  }, {
+	    key: "adjacentTiles",
+	    value: function adjacentTiles(pos) {
+	      var _this = this;
+	
+	      var tiles = [];
+	      Board.DELTAS.forEach(function (delta) {
+	        var row = _this.pos[0] + delta[0];
+	        var col = _this.pos[1] + delta[1];
+	        if (_this.withinBounds([row, col])) {
+	          var tile = _this.grid[row][col];
+	          tiles.push(tile);
+	        }
+	      });
+	
+	      return tiles;
+	    }
+	  }, {
+	    key: "adjacentBombCount",
+	    value: function adjacentBombCount(pos) {
+	      var bombCount = 0;
+	      this.adjacentTiles(pos).forEach(function (tile) {
+	        if (tile === 0) bombCount++;
+	      });
+	
+	      return bombCount;
+	    }
+	
+	    // minesweep () {
+	    //   if (this.flagged || this.explored) {
+	    //     return this;
+	    //   }
+	    //
+	    //   this.explore();
+	    //   this.board.message = "[" + this.pos + "] explored!";
+	    //   if (this.adjacentBombCount() === 0 && !this.hasBomb) {
+	    //     this.adjacentTiles().forEach(tile => {
+	    //       tile.minesweep();
+	    //     });
+	    //   }
+	    // }
+	
 	  }]);
 	
 	  return Board;
 	}();
 	
 	exports.default = Board;
+	
+	
+	Board.DELTAS = [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]];
 
 /***/ },
 /* 180 */
@@ -21976,7 +22047,6 @@
 	    this.flagged = false;
 	    this.explored = false;
 	    this.nearbyBombs = 0;
-	    this.deltas = [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]];
 	  }
 	
 	  _createClass(Tile, [{
@@ -21993,54 +22063,6 @@
 	    key: "explore",
 	    value: function explore() {
 	      this.explored = true;
-	    }
-	  }, {
-	    key: "withinBounds",
-	    value: function withinBounds(pos) {
-	      var gridSize = this.board.gridSize;
-	      return pos[0] >= 0 && pos[0] < gridSize && pos[1] >= 0 && pos[1] < gridSize;
-	    }
-	  }, {
-	    key: "adjacentTiles",
-	    value: function adjacentTiles() {
-	      var _this = this;
-	
-	      var tiles = [];
-	      this.deltas.forEach(function (delta) {
-	        var row = _this.pos[0] + delta[0];
-	        var col = _this.pos[1] + delta[1];
-	        if (_this.withinBounds([row, col])) {
-	          var tile = _this.board.grid[row][col];
-	          tiles.push(tile);
-	        }
-	      });
-	
-	      return tiles;
-	    }
-	  }, {
-	    key: "countAdjacentBombs",
-	    value: function countAdjacentBombs() {
-	      var bombCount = 0;
-	      this.adjacentTiles().forEach(function (tile) {
-	        if (tile.hasBomb) bombCount++;
-	      });
-	
-	      return bombCount;
-	    }
-	  }, {
-	    key: "minesweep",
-	    value: function minesweep() {
-	      if (this.flagged || this.explored) {
-	        return this;
-	      }
-	
-	      this.explore();
-	      this.board.message = "[" + this.pos + "] explored!";
-	      if (this.countAdjacentBombs() === 0 && !this.hasBomb) {
-	        this.adjacentTiles().forEach(function (tile) {
-	          tile.minesweep();
-	        });
-	      }
 	    }
 	  }]);
 	
