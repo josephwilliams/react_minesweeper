@@ -21518,12 +21518,10 @@
 	
 	  _createClass(Game, [{
 	    key: 'updateBoard',
-	    value: function updateBoard(tile, flagged) {
+	    value: function updateBoard(pos, flagged) {
 	      if (flagged) {
-	        tile.toggleFlag();
-	      } else {
-	        console.log('else! game component');
-	      }
+	        this.state.board.toggleFlag(pos);
+	      } else {}
 	
 	      // if (this.state.board.isOver(tile)) {
 	      //   this.state.board.endGame();
@@ -21541,7 +21539,21 @@
 	          'h1',
 	          null,
 	          'minesweeper'
-	        )
+	        ),
+	        _react2.default.createElement(
+	          'p',
+	          { style: { color: "#aaaaaa" } },
+	          'hold alt to place a flag'
+	        ),
+	        _react2.default.createElement(
+	          'p',
+	          null,
+	          this.state.board.message
+	        ),
+	        _react2.default.createElement(_board_comp2.default, {
+	          board: this.state.board,
+	          updateBoard: this.updateBoard
+	        })
 	      );
 	    }
 	  }]);
@@ -21594,24 +21606,26 @@
 	      var _this2 = this;
 	
 	      var board = this.props.board.grid;
-	      return board.map(function (arr, rowIdx) {
+	      return board.map(function (row, rowIdx) {
 	        return _react2.default.createElement(
 	          'div',
 	          { className: 'row', key: rowIdx },
-	          _this2.renderRowTiles(arr, rowIdx)
+	          _this2.renderRowTiles(row, rowIdx)
 	        );
 	      });
 	    }
 	  }, {
 	    key: 'renderRowTiles',
-	    value: function renderRowTiles(arr, rowIdx) {
+	    value: function renderRowTiles(row, rowIdx) {
 	      var _this3 = this;
 	
-	      return arr.map(function (tile, colIdx) {
+	      return row.map(function (tile, colIdx) {
 	        return _react2.default.createElement(_tile_comp2.default, {
 	          tile: tile,
 	          updateBoard: _this3.props.updateBoard,
-	          gameState: _this3.props.gameState,
+	          gameState: _this3.props.board.gameState,
+	          adjacentBombCount: _this3.props.board.adjacentBombCount(rowIdx, colIdx),
+	          pos: [rowIdx, colIdx],
 	          key: [rowIdx, colIdx]
 	        });
 	      });
@@ -21673,7 +21687,7 @@
 	    key: 'handleClick',
 	    value: function handleClick(event) {
 	      var flag = event.altKey ? true : false;
-	      this.props.updateBoard(this.props.tile, flag);
+	      this.props.updateBoard(this.props.pos, flag);
 	    }
 	  }, {
 	    key: 'render',
@@ -21692,9 +21706,14 @@
 	        content = '⚑';
 	      } else if (this.props.tile === false) {
 	        klass = "tile-explored";
-	        content = this.props.tile.countAdjacentBombs();
+	        content = this.props.adjacentBombCount;
 	      } else {
-	        klass = "tile-unexplored";
+	        if (this.props.gameState) {
+	          klass = "tile-unexplored";
+	        } else {
+	          klass = "tile-explored";
+	          content = this.props.adjacentBombCount;
+	        }
 	      }
 	
 	      return _react2.default.createElement(
@@ -21836,7 +21855,7 @@
 
 /***/ },
 /* 179 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ function(module, exports) {
 
 	"use strict";
 	
@@ -21845,12 +21864,6 @@
 	});
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-	
-	var _tile = __webpack_require__(180);
-	
-	var _tile2 = _interopRequireDefault(_tile);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
@@ -21863,23 +21876,23 @@
 	    this.grid = [];
 	    this.message = "let's begin!";
 	    this.gameState = true;
+	    this.DELTAS = [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]];
 	    this.generateTiles();
-	    this.scrambleTiles();
-	    this.generateGrid();
-	    console.log(this.grid);
+	    this.randomizeTiles();
+	    this.setupGrid();
 	  }
 	
 	  _createClass(Board, [{
 	    key: "generateTiles",
 	    value: function generateTiles() {
 	      var tileCount = this.gridSize * this.gridSize;
-	      var grid = new Array(tileCount - this.numBombs).fill(true);
-	      var bombTiles = new Array(this.numbBombs).fill(0);
-	      this.grid = grid.concat(bombTiles);
+	      var gridTiles = new Array(tileCount - this.numBombs).fill(true);
+	      var bombTiles = new Array(this.numBombs).fill(0);
+	      this.grid = gridTiles.concat(bombTiles);
 	    }
 	  }, {
-	    key: "scrambleTiles",
-	    value: function scrambleTiles() {
+	    key: "randomizeTiles",
+	    value: function randomizeTiles() {
 	      var j = 0;
 	      var temp = void 0;
 	      for (var i = this.grid.length - 1; i > 0; i -= 1) {
@@ -21890,26 +21903,24 @@
 	      }
 	    }
 	  }, {
-	    key: "generateGrid",
-	    value: function generateGrid() {
+	    key: "setupGrid",
+	    value: function setupGrid() {
 	      var newGrid = [];
-	      // for (let i = 0; i < this.gridSize.length; i++) {
-	      //   let row = this.grid.slice(i * this.gridSize, i * this.gridSize * i);
-	      //   newGrid.push(row);
-	      // }
-	
-	      var i = 1;
-	      while (this.grid.length > 0) {
-	        var row = this.grid.splice(i * this.gridSize, i * this.gridSize * i);
+	      for (var i = 0; i < this.gridSize; i++) {
+	        var row = this.grid.slice(i * this.gridSize, i * this.gridSize + this.gridSize - 1);
 	        newGrid.push(row);
-	        i++;
 	      }
+	      // while (this.grid.length > 0) {
+	      //   let row = this.grid.splice(i * this.gridSize, i * this.gridSize * i);
+	      //   newGrid.push(row);
+	      //   i++;
+	      // }
 	
 	      this.grid = newGrid;
 	    }
 	  }, {
 	    key: "isOver",
-	    value: function isOver(tile) {
+	    value: function isOver() {
 	      return this.lost() || this.won();
 	    }
 	  }, {
@@ -21940,18 +21951,18 @@
 	  }, {
 	    key: "endGame",
 	    value: function endGame() {
-	      this.message = this.wonGame() ? "you win!" : "you lose!";
-	      this.showBoard();
+	      this.message = this.won() ? "you win!" : "you lose!";
+	      // this.showBoard();
 	    }
-	  }, {
-	    key: "showBoard",
-	    value: function showBoard() {
-	      this.grid.forEach(function (row) {
-	        row.map(function (tile) {
-	          tile.explore();
-	        });
-	      });
-	    }
+	
+	    // showBoard () {
+	    //   this.grid.forEach(row => {
+	    //     row.map(tile => {
+	    //       tile.explore();
+	    //     });
+	    //   });
+	    // }
+	
 	  }, {
 	    key: "withinBounds",
 	    value: function withinBounds(pos) {
@@ -21963,9 +21974,9 @@
 	      var _this = this;
 	
 	      var tiles = [];
-	      Board.DELTAS.forEach(function (delta) {
-	        var row = _this.pos[0] + delta[0];
-	        var col = _this.pos[1] + delta[1];
+	      this.DELTAS.forEach(function (delta) {
+	        var row = pos[0] + delta[0];
+	        var col = pos[1] + delta[1];
 	        if (_this.withinBounds([row, col])) {
 	          var tile = _this.grid[row][col];
 	          tiles.push(tile);
@@ -21983,6 +21994,13 @@
 	      });
 	
 	      return bombCount;
+	    }
+	  }, {
+	    key: "toggleFlag",
+	    value: function toggleFlag(pos) {
+	      var row = pos[0];
+	      var col = pos[1];
+	      this.grid[row][col] = this.grid[row][col] === "" ? true : "";
 	    }
 	
 	    // minesweep () {
@@ -22005,57 +22023,6 @@
 	}();
 	
 	exports.default = Board;
-	
-	
-	Board.DELTAS = [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]];
-
-/***/ },
-/* 180 */
-/***/ function(module, exports) {
-
-	"use strict";
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-	
-	var Tile = function () {
-	  function Tile(board, pos) {
-	    _classCallCheck(this, Tile);
-	
-	    this.board = board;
-	    this.pos = pos;
-	    this.hasBomb = false;
-	    this.flagged = false;
-	    this.explored = false;
-	    this.nearbyBombs = 0;
-	  }
-	
-	  _createClass(Tile, [{
-	    key: "plantBomb",
-	    value: function plantBomb() {
-	      this.hasBomb = true;
-	    }
-	  }, {
-	    key: "toggleFlag",
-	    value: function toggleFlag() {
-	      this.flagged = !this.flagged;
-	    }
-	  }, {
-	    key: "explore",
-	    value: function explore() {
-	      this.explored = true;
-	    }
-	  }]);
-	
-	  return Tile;
-	}();
-	
-	exports.default = Tile;
 
 /***/ }
 /******/ ]);

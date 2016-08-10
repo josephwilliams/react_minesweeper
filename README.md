@@ -327,7 +327,7 @@ scrambleGrid () {
 ### New Tile States
 As mentioned, I'm using new values to represent tile states.  This will decrease coupling of inputs and potentially be more reliable.
 
-Because Javascript considers `0`, `""`, and `false` to be falsey, I can now check for unexplored tiles based on truthiness alone.
+Because Javascript considers `0`, `""`, and `false` to be falsey, I can now check for unexplored tiles based solely on truthiness.
 
 ```javascript
 flagged tile: "" // falsey
@@ -339,11 +339,10 @@ bombed tile: 0 // falsey
 ### Changing the flow of the game
 I re-situated a lot of the logic.  Specifically, I changed the `withinBounds`, `adjacentTiles`, `countAdjacentBombs`, and `minesweep` functions from the `Tile` to the `Board` class.
 
-
-
+Ultimately, after simplifying how `this.grid` stores `tiles`, I was able to delete the `Tile` class entirely, converting much of its logic to the `Board class`.
 
 ### Tile Deltas
-My original implementation re-instantiated `this.deltas`, an array of arrays, for each instantiated `Tile`. To fix this, I attached `DELTAS` to the `Board` class itself as a constant.
+My original implementation re-instantiated `this.deltas`, an array of arrays, for each instantiated `Tile`. To fix this, I attached `this.DELTAS` to the `Board` class, which only renders once.
 
 ```javascript
 Board.DELTAS = [[-1,-1],[-1,0],[-1,1],[0,-1],
@@ -351,9 +350,9 @@ Board.DELTAS = [[-1,-1],[-1,0],[-1,1],[0,-1],
 ```
 
 ### Tile Component Overhaul
-My new `Tile` component's `render()` method was updated to fit the new tile distinction pattern.
+My new `Tile` component's `render()` method was updated to fit the new simplified tile distinction pattern.
 
-I've passed a `gameState` prop from the `Board` component to delineate how and when to expose bomb tiles.
+I passed a `gameState` prop from the `Board` component to expose bomb tiles and unexplored tiles when the game ends.  This allowed me to delete the `showBoard()` function in `board.js`.
 
 ```javascript
 render () {
@@ -372,6 +371,11 @@ render () {
     klass = "tile-explored";
     content = this.props.tile.countAdjacentBombs();
   } else {
-    klass = "tile-unexplored";
+    if (this.props.gameState){
+      klass = "tile-unexplored";
+    } else {
+      klass = "tile-explored";
+      content = this.props.tile.countAdjacentBombs();
+    }
   }
 ```

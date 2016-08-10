@@ -4,7 +4,7 @@ import FontAwesome from 'react-fontawesome';
 export default class Tile extends React.Component {
   handleClick (event) {
     let flag = event.altKey ? true : false;
-    this.props.updateBoard(this.props.tile, flag);
+    this.props.updateBoard(this.props.pos, flag);
   }
 
   render () {
@@ -21,9 +21,14 @@ export default class Tile extends React.Component {
       content = "\u2691";
     } else if (this.props.tile === false) {
       klass = "tile-explored";
-      content = this.props.tile.countAdjacentBombs();
+      content = this.props.adjacentBombCount;
     } else {
-      klass = "tile-unexplored";
+      if (this.props.gameState){
+        klass = "tile-unexplored";
+      } else {
+        klass = "tile-explored";
+        content = this.props.adjacentBombCount;
+      }
     }
 
     return (

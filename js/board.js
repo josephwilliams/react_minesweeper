@@ -1,5 +1,3 @@
-import Tile from './tile';
-
 export default class Board {
   constructor(gridSize, numBombs) {
     this.gridSize = gridSize;
@@ -7,20 +5,21 @@ export default class Board {
     this.grid = [];
     this.message = "let's begin!";
     this.gameState = true;
+    this.DELTAS = [[-1,-1],[-1,0],[-1,1],[0,-1],
+                   [0,1],[1,-1],[1,0],[1,1]];
     this.generateTiles();
-    this.scrambleTiles();
-    this.generateGrid();
-    console.log(this.grid);
+    this.randomizeTiles();
+    this.setupGrid();
   }
 
   generateTiles () {
     let tileCount = this.gridSize * this.gridSize;
-    let grid = new Array(tileCount - this.numBombs).fill(true);
-    let bombTiles = new Array(this.numbBombs).fill(0);
-    this.grid = grid.concat(bombTiles);
+    let gridTiles = new Array(tileCount - this.numBombs).fill(true);
+    let bombTiles = new Array(this.numBombs).fill(0);
+    this.grid = gridTiles.concat(bombTiles);
   }
 
-  scrambleTiles () {
+  randomizeTiles () {
     let j = 0;
     let temp;
     for (let i = this.grid.length - 1; i > 0; i -= 1) {
@@ -31,24 +30,22 @@ export default class Board {
     }
   }
 
-  generateGrid () {
+  setupGrid () {
     let newGrid = [];
-    // for (let i = 0; i < this.gridSize.length; i++) {
-    //   let row = this.grid.slice(i * this.gridSize, i * this.gridSize * i);
-    //   newGrid.push(row);
-    // }
-
-    let i = 1;
-    while (this.grid.length > 0) {
-      let row = this.grid.splice(i * this.gridSize, i * this.gridSize * i);
+    for (let i = 0; i < this.gridSize; i++) {
+      let row = this.grid.slice(i * this.gridSize, i * this.gridSize + this.gridSize - 1);
       newGrid.push(row);
-      i++;
     }
+    // while (this.grid.length > 0) {
+    //   let row = this.grid.splice(i * this.gridSize, i * this.gridSize * i);
+    //   newGrid.push(row);
+    //   i++;
+    // }
 
     this.grid = newGrid;
   }
 
-  isOver (tile) {
+  isOver () {
     return this.lost() || this.won();
   }
 
@@ -78,17 +75,17 @@ export default class Board {
   }
 
   endGame () {
-    this.message = this.wonGame() ? "you win!" : "you lose!";
-    this.showBoard();
+    this.message = this.won() ? "you win!" : "you lose!";
+    // this.showBoard();
   }
 
-  showBoard () {
-    this.grid.forEach(row => {
-      row.map(tile => {
-        tile.explore();
-      });
-    });
-  }
+  // showBoard () {
+  //   this.grid.forEach(row => {
+  //     row.map(tile => {
+  //       tile.explore();
+  //     });
+  //   });
+  // }
 
   withinBounds (pos) {
     return pos[0] >= 0 && pos[0] < this.gridSize &&
@@ -97,9 +94,9 @@ export default class Board {
 
   adjacentTiles (pos) {
     let tiles = [];
-    Board.DELTAS.forEach(delta => {
-      let row = this.pos[0] + delta[0];
-      let col = this.pos[1] + delta[1];
+    this.DELTAS.forEach(delta => {
+      let row = pos[0] + delta[0];
+      let col = pos[1] + delta[1];
       if (this.withinBounds([row, col])) {
         let tile = this.grid[row][col];
         tiles.push(tile);
@@ -119,6 +116,12 @@ export default class Board {
     return bombCount;
   }
 
+  toggleFlag (pos) {
+    let row = pos[0];
+    let col = pos[1];
+    this.grid[row][col] = this.grid[row][col] === "" ? true : "";
+  }
+
   // minesweep () {
   //   if (this.flagged || this.explored) {
   //     return this;
@@ -133,6 +136,3 @@ export default class Board {
   //   }
   // }
 }
-
-Board.DELTAS = [[-1,-1],[-1,0],[-1,1],[0,-1],
-[0,1],[1,-1],[1,0],[1,1]];
