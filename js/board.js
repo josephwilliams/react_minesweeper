@@ -12,6 +12,7 @@ export default class Board {
     this.randomizeTiles();
     this.setupGrid();
     this.determineBombCounts();
+    console.log(this.bombCounts);
   }
 
   generateTiles () {
@@ -43,14 +44,15 @@ export default class Board {
   }
 
   determineBombCounts () {
-    let tempGrid = this.grid;
-    tempGrid.map((row, rowIdx) => {
-      row.map((tile, colIdx) => {
-        tile = this.adjacentBombCount([rowIdx, colIdx]);
-      });
-    });
+    const countGrid = new Array(this.gridSize).fill([]);
+    for (let i = 0; i < this.grid.length; i++) {
+      for (var j = 0; j < this.grid[i].length; j++) {
+        let bombCount = this.adjacentBombCount([i, j]);
+        countGrid[i][j] = bombCount;
+      }
+    }
 
-    this.bombCounts = tempGrid;
+    this.bombCounts = countGrid;
   }
 
   adjacentBombCount (pos) {
@@ -64,7 +66,7 @@ export default class Board {
   }
 
   adjacentTiles (pos) {
-    console.log("pos:"+ pos);
+    // console.log("pos:"+ pos);
     const tiles = [];
     this.DELTAS.forEach(delta => {
       let row = pos[0] + delta[0];
@@ -90,6 +92,7 @@ export default class Board {
   }
 
   beginExploration (pos) {
+    console.log('pos:' + pos);
     let tile = this.grid[pos[0]][pos[1]];
     if (tile === 0) {
       this.endGame();
@@ -99,17 +102,19 @@ export default class Board {
   }
 
   explore (pos) {
-    let tile = this.grid[pos[0]][pos[1]];
-    if (tile === "" || tile === "false") {
-      return;
-    }
+    if (this.withinBounds(pos)) {
+      let tile = this.grid[pos[0]][pos[1]];
+      if (tile === "" || tile === false) {
+        return;
+      }
 
-    this.grid[pos[0]][pos[1]] = false; // explored
-    this.message = "[" + this.pos + "] explored!";
-    if (this.adjacentBombCount(pos) === 0 && tile !== 0) {
-      this.adjacentTiles().forEach(pos => {
-        this.explore(pos);
-      });
+      this.grid[pos[0]][pos[1]] = false; // explored
+      this.message = "[" + this.pos + "] explored!";
+      if (this.adjacentBombCount(pos) === 0 && tile !== 0) {
+        this.adjacentTiles(pos).forEach(tile => {
+          this.explore(tile);
+        });
+      }
     }
   }
 
@@ -117,7 +122,7 @@ export default class Board {
     let exploredTiles = 0;
     this.grid.forEach(row => {
       row.forEach(tile => {
-        if (!tile.hasBomb && tile.explored)
+        if (!tile)
           exploredTiles++;
       });
     });

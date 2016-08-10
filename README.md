@@ -281,6 +281,8 @@ export default class Tile {
 }
 ```
 
+## Refactoring for Optimization
+
 #### Random Bomb Placement
 My first attempt at a random bomb placement - and terribly inefficient. What would happen if the board had 1000 tiles and 999 bombs? There'd be countless duplicates.
 ```javascript
@@ -357,9 +359,13 @@ Ultimately, after simplifying how `this.grid` stores `tiles`, I was able to dele
 My original implementation re-instantiated `this.deltas`, an array of arrays, for each instantiated `Tile`. To fix this, I attached `this.DELTAS` to the `Board` class, which only renders once.
 
 ```javascript
-Board.DELTAS = [[-1,-1],[-1,0],[-1,1],[0,-1],
+export default class Board {
+  constructor(gridSize, numBombs) {
+    this.DELTAS = [[-1,-1],[-1,0],[-1,1],[0,-1],
                [0,1],[1,-1],[1,0],[1,1]];
 ```
+
+### Finding Adjacent Bomb Count - Once.
 
 While coding my `Tile Component`, I realized that there was an anti-pattern: I was calling `countAdjacentBombs()` multiple times for various tiles on each re-render of the board.  I fixed this by creating a `determineBombCounts()` function in my `Board` class that would store the count of adjacent bombs in a variable `this.bombCounts`.  I could then pass the specific adjacent bomb count of any given tile to it as a prop.
 
