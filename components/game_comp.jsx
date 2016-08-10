@@ -13,12 +13,12 @@ export default class Game extends React.Component {
     if (flagged) {
       tile.toggleFlag();
     } else {
-      tile.minesweep();
+      console.log('else! game component');
     }
 
-    if (this.state.board.isOver(tile)) {
-      this.state.board.endGame();
-    }
+    // if (this.state.board.isOver(tile)) {
+    //   this.state.board.endGame();
+    // }
 
     this.setState({ board: this.state.board });
   }
@@ -27,12 +27,7 @@ export default class Game extends React.Component {
     return (
       <div className="game-container">
         <h1>minesweeper</h1>
-        <p style={{color:"#aaaaaa"}}>hold alt to place a flag</p>
-        <p>{this.state.board.message}</p>
-        <BoardComponent
-          board={this.state.board}
-          updateBoard={this.updateBoard}
-        />
+
       </div>
     )
   }

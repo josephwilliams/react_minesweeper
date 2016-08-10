@@ -21522,12 +21522,12 @@
 	      if (flagged) {
 	        tile.toggleFlag();
 	      } else {
-	        tile.minesweep();
+	        console.log('else! game component');
 	      }
 	
-	      if (this.state.board.isOver(tile)) {
-	        this.state.board.endGame();
-	      }
+	      // if (this.state.board.isOver(tile)) {
+	      //   this.state.board.endGame();
+	      // }
 	
 	      this.setState({ board: this.state.board });
 	    }
@@ -21541,21 +21541,7 @@
 	          'h1',
 	          null,
 	          'minesweeper'
-	        ),
-	        _react2.default.createElement(
-	          'p',
-	          { style: { color: "#aaaaaa" } },
-	          'hold alt to place a flag'
-	        ),
-	        _react2.default.createElement(
-	          'p',
-	          null,
-	          this.state.board.message
-	        ),
-	        _react2.default.createElement(_board_comp2.default, {
-	          board: this.state.board,
-	          updateBoard: this.updateBoard
-	        })
+	        )
 	      );
 	    }
 	  }]);
