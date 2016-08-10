@@ -304,15 +304,17 @@ I'm generating an Array, `grid`, whose length is the total number of tiles on th
 
 I'm then creating an array of length `this.numBombs` that contain only `0`, my value for a bomb tile.
 
+Using my `randomizeTiles()` function, I shuffled the tiles within the `this.grid` array.  Next, with `setupGrid()`, I changed what was one array into an array of arrays to simulate rows on a grid.
+
 ```javascript
-generateGrid () {
+generateTiles () {
   let tileCount = this.gridSize * this.gridSize;
-  let grid = new Array(tileCount - this.numBombs).fill(true);
-  let bombTiles = new Array(this.numbBombs).fill(0);
-  this.grid = grid.concat(bombTiles);
+  let gridTiles = new Array(tileCount - this.numBombs).fill(true);
+  let bombTiles = new Array(this.numBombs).fill(0);
+  this.grid = gridTiles.concat(bombTiles);
 }
 
-scrambleGrid () {
+randomizeTiles () {
   let j = 0;
   let temp;
   for (let i = this.grid.length - 1; i > 0; i -= 1) {
@@ -321,6 +323,16 @@ scrambleGrid () {
     this.grid[i] = this.grid[j];
     this.grid[j] = temp;
   }
+}
+
+setupGrid () {
+  let newGrid = [];
+  for (let i = 0; i < this.gridSize; i++) {
+    let row = this.grid.slice(i * this.gridSize, i * this.gridSize + this.gridSize - 1);
+    newGrid.push(row);
+  }
+
+  this.grid = newGrid;
 }
 ```
 
@@ -349,10 +361,50 @@ Board.DELTAS = [[-1,-1],[-1,0],[-1,1],[0,-1],
                [0,1],[1,-1],[1,0],[1,1]];
 ```
 
+While coding my `Tile Component`, I realized that there was an anti-pattern: I was calling `countAdjacentBombs()` multiple times for various tiles on each re-render of the board.  I fixed this by creating a `determineBombCounts()` function in my `Board` class that would store the count of adjacent bombs in a variable `this.bombCounts`.  I could then pass the specific adjacent bomb count of any given tile to it as a prop.
+
+```javascript
+determineBombCounts () {
+  tempGrid = this.grid;
+  tempGrid.map((row, rowIdx) => {
+    row.map((tile, colIdx) => {
+      tile = adjacentBombCount([rowIdx, colIdx]);
+    });
+  });
+
+  this.bombCounts = tempGrid;
+}
+
+adjacentBombCount (pos) {
+  let bombCount = 0;
+  this.adjacentTiles(pos).forEach(tile => {
+    if (tile === 0)
+    bombCount++;
+  });
+
+  return bombCount;
+}
+
+adjacentTiles (pos) {
+  console.log("pos:"+ pos);
+  const tiles = [];
+  this.DELTAS.forEach(delta => {
+    let row = pos[0] + delta[0];
+    let col = pos[1] + delta[1];
+    if (this.withinBounds([row, col])) {
+      let tile = this.grid[row][col];
+      tiles.push(tile);
+    }
+  });
+
+  return tiles;
+}
+```
+
 ### Tile Component Overhaul
 My new `Tile` component's `render()` method was updated to fit the new simplified tile distinction pattern.
 
-I passed a `gameState` prop from the `Board` component to expose bomb tiles and unexplored tiles when the game ends.  This allowed me to delete the `showBoard()` function in `board.js`.
+I passed a `gameState` prop from the `Board` component to expose bomb tiles and unexplored tiles when the game ends.  This allowed me to delete the `showBoard()` function in the `Board` class.
 
 ```javascript
 render () {
@@ -369,15 +421,15 @@ render () {
     content = "\u2691";
   } else if (this.props.tile === false) {
     klass = "tile-explored";
-    content = this.props.tile.countAdjacentBombs();
+    content = this.props.adjacentBombCount;
   } else {
     if (this.props.gameState){
       klass = "tile-unexplored";
     } else {
       klass = "tile-explored";
-      content = this.props.tile.countAdjacentBombs();
+      content = this.props.adjacentBombCount;
     }
   }
 ```
 
-Soon after, I began refactoring my mine minesweeping methods, the recursive `explore()` function, newly in my `Board` class.  `explore()` was to be enacted after `beginExploration()`, which would check for defeat conditions, e.g. clicking a bomb tile.  As a result, I got rid of my `lostGame()` function.
+Soon after, I began refactoring my mine minesweeping methods, the recursive `explore()` function, newly in my `Board` class.  `explore()` was to be enacted after `beginExploration()`, which would check for defeat conditions, e.g. clicking a bomb tile.  As a result, I got rid of my `lostGame()` function and my `isOver()` function.

@@ -4,6 +4,7 @@ import FontAwesome from 'react-fontawesome';
 export default class Tile extends React.Component {
   handleClick (event) {
     let flag = event.altKey ? true : false;
+    console.log(this.props.pos);
     this.props.updateBoard(this.props.pos, flag);
   }
 

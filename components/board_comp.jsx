@@ -15,14 +15,16 @@ export default class Board extends React.Component {
 
   renderRowTiles (row, rowIdx) {
     return row.map((tile, colIdx) => {
+      let gridSize = this.props.board.gridSize;
+      let adjacentBombCount = this.props.board.bombCounts[rowIdx][colIdx];
       return (
         <TileComponent
           tile={tile}
           updateBoard={this.props.updateBoard}
           gameState={this.props.board.gameState}
-          adjacentBombCount={this.props.board.adjacentBombCount(rowIdx, colIdx)}
+          adjacentBombCount={adjacentBombCount}
           pos={[rowIdx, colIdx]}
-          key={[rowIdx, colIdx]}
+          key={rowIdx * gridSize + colIdx}
           />
       );
     });
