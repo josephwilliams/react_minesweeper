@@ -8,6 +8,7 @@ export default class Game extends React.Component {
     this.state = { board: new Board(4, 2) };
     this.updateBoard = this.updateBoard.bind(this);
     this.resetBoard = this.resetBoard.bind(this);
+    this.adjacentBombCount = this.state.board.adjacentBombCount.bind(this);
   }
 
   updateBoard (pos, flagged) {
