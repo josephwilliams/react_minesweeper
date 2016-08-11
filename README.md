@@ -470,3 +470,17 @@ explore (pos) {
   }
 }
 ```
+
+And the new win parameters:
+* if all tiles are explored and/or correctly flagged
+* if all tiles but bomb tiles are explored
+* if all bomb tiles are flagged
+
+```javascript
+won () {
+  let tileCount = this.gridSize * this.gridSize;
+  return (tileCount - this.correctFlagCount - this.exploredCount) === 0 ||
+         (tileCount - this.exploredCount === this.numBombs) ||
+         (this.correctFlagCount === this.numBombs);
+}
+```
