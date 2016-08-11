@@ -3,10 +3,10 @@ export default class Board {
     this.gridSize = gridSize;
     this.numBombs = numBombs ? numBombs : this.gridSize;
     this.grid = [];
-    this.bombCounts = [];
-    this.gameState = true;
-    this.flagCount = 0;
-    this.exploredCount = 0;
+    this.bombCounts = [];       // mapping of adjacent bomb counts of each tile
+    this.gameState = true;      // if game is still ongoing
+    this.correctflagCount = 0;  // flagged bomb tile count
+    this.exploredCount = 0;     // explored tile count
     this.message = "let's begin!";
     this.DELTAS = [[-1,-1],[-1,0],[-1,1],[0,-1],
                    [0,1],[1,-1],[1,0],[1,1]];
@@ -90,12 +90,16 @@ export default class Board {
   toggleFlag (pos) {
     let row = pos[0];
     let col = pos[1];
-    if (this.grid[row][col] === ""){
-      this.flagCount--;
-      this.grid[row][col] = true;
-    } else if (this.grid[row][col] !== false) {
-      this.flagCount++;
-      this.grid[row][col] = "";
+    if (this.grid[row][col] === ""){           // flagged tile
+      this.grid[row][col] = true;              // returns to unexplored
+    } else if (this.grid[row][col] === 1) {    // bomb tile with flag
+      this.grid[row][col] = 0;                 // returns to unexplored bomb
+      this.correctFlagCount--;
+    } else if (this.grid[row][col] === 0) {    // bomb tile unexplored
+      this.grid[row][col] = 1;                 // switches to bomb tile with flag
+      this.correctFlagCount++;
+    } else if (this.grid[row][col] === true) { // unexplored tile
+      this.grid[row][col] = "";                // switches to flag tile unexplored
     }
   }
 
@@ -129,7 +133,9 @@ export default class Board {
 
   won () {
     let tileCount = this.gridSize * this.gridSize;
-    return (tileCount - this.flagCount - this.exploredCount) === 0;
+    return (tileCount - this.correctFlagCount - this.exploredCount) === 0 ||
+           (tileCount - this.exploredCount === this.numBombs) ||
+           (this.correctFlagCount === this.numBombs);
   }
 
   endGame () {

@@ -339,21 +339,42 @@ setupGrid () {
 ```
 
 ### New Tile States
-As mentioned, I'm using new values to represent tile states.  This will decrease coupling of inputs and potentially be more reliable.
-
-Because Javascript considers `0`, `""`, and `false` to be falsey, I can now check for unexplored tiles based solely on truthiness.
+As mentioned, I'm using new values to represent tile states. This will decrease coupling of inputs and potentially be more reliable.
 
 ```javascript
 flagged tile: "" // falsey
 explored tile: false // falsey
 unexplored tile: true // truthy
 bombed tile: 0 // falsey
+bombed tile with flag: 1 // truthy
 ```
 
 ### Changing the flow of the game
 I re-situated a lot of the logic.  Specifically, I changed the `withinBounds`, `adjacentTiles`, `countAdjacentBombs`, and `minesweep` functions from the `Tile` to the `Board` class.
 
 Ultimately, after simplifying how `this.grid` stores `tiles`, I was able to delete the `Tile` class entirely, converting much of its logic to the `Board class`.
+
+This did leave me with some unruly functions, like `toggleFlag`, in the `Board` class. Furthermore, I had to form the class around the tile variable nomenclature.
+
+```javascript
+toggleFlag (pos) {
+  let row = pos[0];
+  let col = pos[1];
+  if (this.grid[row][col] === ""){           // flagged tile
+    this.grid[row][col] = true;              // returns to unexplored
+    this.flagCount--;
+  } else if (this.grid[row][col] === 1) {    // bomb tile with flag
+    this.grid[row][col] = 0;                 // returns to unexplored bomb
+    this.flagCount--;
+  } else if (this.grid[row][col] === 0) {    // bomb tile unexplored
+    this.grid[row][col] = 1;                 // switches to bomb tile with flag
+    this.flagCount++;
+  } else if (this.grid[row][col] === true) { // unexplored tile
+    this.grid[row][col] = "";                // switches to flag tile unexplored
+    this.flagCount++;
+  }
+}
+```
 
 ### Tile Deltas
 My original implementation re-instantiated `this.deltas`, an array of arrays, for each instantiated `Tile`. To fix this, I attached `this.DELTAS` to the `Board` class, which only renders once.
@@ -363,50 +384,6 @@ export default class Board {
   constructor(gridSize, numBombs) {
     this.DELTAS = [[-1,-1],[-1,0],[-1,1],[0,-1],
                [0,1],[1,-1],[1,0],[1,1]];
-```
-
-### Finding Adjacent Bomb Count - Once.
-
-While coding my `Tile Component`, I realized that there was an anti-pattern: I was calling `countAdjacentBombs()` multiple times for various tiles on each re-render of the board.  I fixed this by creating a `determineBombCounts()` function in my `Board` class that would store the count of adjacent bombs in a variable `this.bombCounts`.  I could then pass the specific adjacent bomb count of any given tile to it as a prop.
-
-```javascript
-getAdjacentBombCounts () {
-  const tempGrid = [];
-  for (let i = 0; i < this.gridSize; i++) {
-    tempGrid.push([]);
-    for (let j = 0; j < this.gridSize; j++) {
-      let bombCount = this.adjacentBombCount([i, j]);
-      tempGrid[i].push(bombCount);
-    }
-  }
-
-  this.bombCounts = tempGrid;
-}
-
-adjacentBombCount (pos) {
-  let bombCount = 0;
-  this.adjacentTiles(pos).forEach(tile => {
-    if (tile === 0) {
-      bombCount++;
-    }
-  });
-
-  return bombCount;
-}
-
-adjacentTiles (pos) {
-  let tiles = [];
-  this.DELTAS.forEach(delta => {
-    let row = pos[0] + delta[0];
-    let col = pos[1] + delta[1];
-    if (this.withinBounds([row, col])) {
-      let tile = this.grid[row][col];
-      tiles.push(tile);
-    }
-  });
-
-  return tiles;
-}
 ```
 
 ### Tile Component Overhaul
@@ -439,5 +416,57 @@ render () {
     }
   }
 ```
+#### A Single Click Event Handler
 
-Soon after, I began refactoring my mine minesweeping methods, the recursive `explore()` function, newly in my `Board` class.  `explore()` was to be enacted after `beginExploration()`, which would check for defeat conditions, e.g. clicking a bomb tile.  As a result, I got rid of my `lostGame()` function and my `isOver()` function.
+I was also able to refactor out the click event handler function that was recreated with each `Tile`.  Rather, I attached `this.props.pos` as a `data-tag` on each tile's container class.
+
+```javascript
+<div className={klass} data-tag={this.props.pos}>
+```
+By doing this and attaching a click event handler to the `Board` component, I was able to read the position with `event.target.dataset.tag`.
+
+```javascript
+handleClick (event) {
+  let tileStr = event.target.dataset.tag;
+  let pos = tileStr.split(",").map(Number)
+  if (this.props.board.gameState) {
+    let flag = event.altKey ? true : false;
+    this.props.updateBoard(pos, flag);
+  }
+}
+```
+
+This left the `Tile` class with only a `render` method.  As such, I turned it into a functional component.  ES6 + React = Awesome.
+
+#### Exploring and Ending the Game
+Soon after, I began refactoring my mine minesweeping methods, the recursive `explore()` function, newly in my `Board` class.  `explore()` was to be enacted after `beginExploration()`, which would check for defeat conditions, e.g. clicking a bomb tile.  As a result, I got rid of my `lostGame()` function and my `isOver()` function.  A loss would be immediately interpreted, and win conditions, via `won()` would be checked at the end of each turn.
+
+```javascript
+beginExploration (pos) {
+  let tile = this.grid[pos[0]][pos[1]];
+  if (tile === 0) {
+    this.endGame();
+  } else {
+    this.explore(pos);
+  }
+}
+
+explore (pos) {
+  if (this.withinBounds(pos)) {
+    let tile = this.grid[pos[0]][pos[1]];
+    if (tile === "" || tile === false) {
+      return;
+    }
+
+    this.grid[pos[0]][pos[1]] = false; // explored
+    this.exploredCount++;
+    if (this.bombCounts[pos[0]][pos[1]] === 0 && tile !== 0) {
+      this.DELTAS.forEach(delta => {
+        let row = pos[0] + delta[0];
+        let col = pos[1] + delta[1];
+        this.explore([row, col]);
+      });
+    }
+  }
+}
+```

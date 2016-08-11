@@ -21514,6 +21514,7 @@
 	    _this.state = { board: new _board2.default(4, 2) };
 	    _this.updateBoard = _this.updateBoard.bind(_this);
 	    _this.resetBoard = _this.resetBoard.bind(_this);
+	    _this.adjacentBombCount = _this.state.board.adjacentBombCount.bind(_this);
 	    return _this;
 	  }
 	
@@ -21640,7 +21641,6 @@
 	        var adjacentBombCount = _this3.props.board.bombCounts[rowIdx][colIdx];
 	        return _react2.default.createElement(_tile_comp2.default, {
 	          tile: tile,
-	          updateBoard: _this3.props.updateBoard,
 	          gameState: _this3.props.board.gameState,
 	          adjacentBombCount: adjacentBombCount,
 	          pos: [rowIdx, colIdx],
@@ -21649,11 +21649,21 @@
 	      });
 	    }
 	  }, {
+	    key: 'handleClick',
+	    value: function handleClick(event) {
+	      var tileStr = event.target.dataset.tag;
+	      var pos = tileStr.split(",").map(Number);
+	      if (this.props.board.gameState) {
+	        var flag = event.altKey ? true : false;
+	        this.props.updateBoard(pos, flag);
+	      }
+	    }
+	  }, {
 	    key: 'render',
 	    value: function render() {
 	      return _react2.default.createElement(
 	        'div',
-	        { className: 'board-container' },
+	        { className: 'board-container', onClick: this.handleClick.bind(this) },
 	        this.renderRows()
 	      );
 	    }
@@ -21668,88 +21678,68 @@
 /* 177 */
 /***/ function(module, exports, __webpack_require__) {
 
-	'use strict';
+	"use strict";
 	
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
 	
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-	
 	var _react = __webpack_require__(1);
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _reactFontawesome = __webpack_require__(179);
-	
-	var _reactFontawesome2 = _interopRequireDefault(_reactFontawesome);
-	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-	
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-	
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-	
-	var Tile = function (_React$Component) {
-	  _inherits(Tile, _React$Component);
-	
-	  function Tile() {
-	    _classCallCheck(this, Tile);
-	
-	    return _possibleConstructorReturn(this, Object.getPrototypeOf(Tile).apply(this, arguments));
+	var Tile = function Tile(props) {
+	  var klass = void 0,
+	      content = null;
+	  if (props.tile === 0) {
+	    // bomb
+	    if (props.gameState) {
+	      klass = "tile-unexplored";
+	    } else {
+	      klass = "tile-bomb"; // exposed when game ends
+	      content = "💣";
+	    }
+	  } else if (props.tile === 1) {
+	    // bomb with flag
+	    if (props.gameState) {
+	      klass = "tile-flagged";
+	      content = "⚑";
+	    } else {
+	      // exposed when game ends
+	      klass = "tile-bomb";
+	      content = "💣";
+	    }
+	  } else if (props.tile === "") {
+	    // flag, unexplored
+	    klass = "tile-flagged";
+	    content = "⚑";
+	  } else if (props.tile === false) {
+	    // explored
+	    klass = "tile-explored";
+	    content = props.adjacentBombCount;
+	  } else {
+	    // unexplored
+	    if (props.gameState) {
+	      klass = "tile-unexplored";
+	    } else {
+	      // exposed when game ends
+	      klass = "tile-explored";
+	      content = props.adjacentBombCount;
+	    }
 	  }
 	
-	  _createClass(Tile, [{
-	    key: 'handleClick',
-	    value: function handleClick(event) {
-	      if (this.props.gameState) {
-	        var flag = event.altKey ? true : false;
-	        this.props.updateBoard(this.props.pos, flag);
-	      }
-	    }
-	  }, {
-	    key: 'render',
-	    value: function render() {
-	      var klass = void 0,
-	          content = null;
-	      if (this.props.tile === 0) {
-	        if (this.props.gameState) {
-	          klass = "tile-unexplored";
-	        } else {
-	          klass = "tile-bomb";
-	          content = '💣';
-	        }
-	      } else if (this.props.tile === "") {
-	        klass = "tile-flagged";
-	        content = '⚑';
-	      } else if (this.props.tile === false) {
-	        klass = "tile-explored";
-	        content = this.props.adjacentBombCount;
-	      } else {
-	        if (this.props.gameState) {
-	          klass = "tile-unexplored";
-	        } else {
-	          klass = "tile-explored";
-	          content = this.props.adjacentBombCount;
-	        }
-	      }
-	
-	      return _react2.default.createElement(
-	        'div',
-	        { className: klass, onClick: this.handleClick.bind(this) },
-	        _react2.default.createElement(
-	          'div',
-	          { className: 'tile-content' },
-	          content
-	        )
-	      );
-	    }
-	  }]);
-	
-	  return Tile;
-	}(_react2.default.Component);
+	  return _react2.default.createElement(
+	    "div",
+	    { className: klass },
+	    _react2.default.createElement(
+	      "div",
+	      { className: "tile-content", "data-tag": props.pos },
+	      content
+	    )
+	  );
+	};
 	
 	exports.default = Tile;
 
@@ -21774,10 +21764,10 @@
 	    this.gridSize = gridSize;
 	    this.numBombs = numBombs ? numBombs : this.gridSize;
 	    this.grid = [];
-	    this.bombCounts = [];
-	    this.gameState = true;
-	    this.flagCount = 0;
-	    this.exploredCount = 0;
+	    this.bombCounts = []; // mapping of adjacent bomb counts of each tile
+	    this.gameState = true; // if game is still ongoing
+	    this.correctflagCount = 0; // flagged bomb tile count
+	    this.exploredCount = 0; // explored tile count
 	    this.message = "let's begin!";
 	    this.DELTAS = [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]];
 	    this.generateTiles();
@@ -21871,11 +21861,19 @@
 	      var row = pos[0];
 	      var col = pos[1];
 	      if (this.grid[row][col] === "") {
-	        this.flagCount--;
-	        this.grid[row][col] = true;
-	      } else if (this.grid[row][col] !== false) {
-	        this.flagCount++;
-	        this.grid[row][col] = "";
+	        // flagged tile
+	        this.grid[row][col] = true; // returns to unexplored
+	      } else if (this.grid[row][col] === 1) {
+	        // bomb tile with flag
+	        this.grid[row][col] = 0; // returns to unexplored bomb
+	        this.correctFlagCount--;
+	      } else if (this.grid[row][col] === 0) {
+	        // bomb tile unexplored
+	        this.grid[row][col] = 1; // switches to bomb tile with flag
+	        this.correctFlagCount++;
+	      } else if (this.grid[row][col] === true) {
+	        // unexplored tile
+	        this.grid[row][col] = ""; // switches to flag tile unexplored
 	      }
 	    }
 	  }, {
@@ -21914,7 +21912,7 @@
 	    key: "won",
 	    value: function won() {
 	      var tileCount = this.gridSize * this.gridSize;
-	      return tileCount - this.flagCount - this.exploredCount === 0;
+	      return tileCount - this.correctFlagCount - this.exploredCount === 0 || tileCount - this.exploredCount === this.numBombs || this.correctFlagCount === this.numBombs;
 	    }
 	  }, {
 	    key: "endGame",
@@ -21928,126 +21926,6 @@
 	}();
 	
 	exports.default = Board;
-
-/***/ },
-/* 179 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	
-	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-	
-	var _react = __webpack_require__(1);
-	
-	var _react2 = _interopRequireDefault(_react);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
-	
-	/**
-	 * A React component for the font-awesome icon library.
-	 *
-	 *
-	 * @param {Boolean} [border=false] Whether or not to show a border radius
-	 * @param {String} [className] An extra set of CSS classes to add to the component
-	 * @param {Boolean} [fixedWidth=false] Make buttons fixed width
-	 * @param {String} [flip=false] Flip the icon's orientation.
-	 * @param {Boolean} [inverse=false]Inverse the icon's color
-	 * @param {String} name Name of the icon to use
-	 * @param {Boolean} [pulse=false] Rotate icon with 8 steps (rather than smoothly)
-	 * @param {Number} [rotate] The degress to rotate the icon by
-	 * @param {String} [size] The icon scaling size
-	 * @param {Boolean} [spin=false] Spin the icon
-	 * @param {String} [stack] Stack an icon on top of another
-	 * @module FontAwesome
-	 * @type {ReactClass}
-	 */
-	exports.default = _react2.default.createClass({
-	
-	  displayName: 'FontAwesome',
-	
-	  propTypes: {
-	    border: _react2.default.PropTypes.bool,
-	    className: _react2.default.PropTypes.string,
-	    fixedWidth: _react2.default.PropTypes.bool,
-	    flip: _react2.default.PropTypes.oneOf(['horizontal', 'vertical']),
-	    inverse: _react2.default.PropTypes.bool,
-	    name: _react2.default.PropTypes.string.isRequired,
-	    pulse: _react2.default.PropTypes.bool,
-	    rotate: _react2.default.PropTypes.oneOf([90, 180, 270]),
-	    size: _react2.default.PropTypes.oneOf(['lg', '2x', '3x', '4x', '5x']),
-	    spin: _react2.default.PropTypes.bool,
-	    stack: _react2.default.PropTypes.oneOf(['1x', '2x'])
-	  },
-	
-	  render: function render() {
-	    var _props = this.props;
-	    var border = _props.border;
-	    var fixedWidth = _props.fixedWidth;
-	    var flip = _props.flip;
-	    var inverse = _props.inverse;
-	    var name = _props.name;
-	    var pulse = _props.pulse;
-	    var rotate = _props.rotate;
-	    var size = _props.size;
-	    var spin = _props.spin;
-	    var stack = _props.stack;
-	
-	    var props = _objectWithoutProperties(_props, ['border', 'fixedWidth', 'flip', 'inverse', 'name', 'pulse', 'rotate', 'size', 'spin', 'stack']);
-	
-	    var className = 'fa fa-' + name;
-	
-	    if (size) {
-	      className += ' fa-' + size;
-	    }
-	
-	    if (spin) {
-	      className += ' fa-spin';
-	    }
-	
-	    if (pulse) {
-	      className += ' fa-pulse';
-	    }
-	
-	    if (border) {
-	      className += ' fa-border';
-	    }
-	
-	    if (fixedWidth) {
-	      className += ' fa-fw';
-	    }
-	
-	    if (inverse) {
-	      className += ' fa-inverse';
-	    }
-	
-	    if (flip) {
-	      className += ' fa-flip-' + flip;
-	    }
-	
-	    if (rotate) {
-	      className += ' fa-rotate-' + rotate;
-	    }
-	
-	    if (stack) {
-	      className += ' fa-stack-' + stack;
-	    }
-	
-	    if (this.props.className) {
-	      className += ' ' + this.props.className;
-	    }
-	
-	    return _react2.default.createElement('span', _extends({}, props, {
-	      className: className
-	    }));
-	  }
-	});
-	module.exports = exports['default'];
 
 /***/ }
 /******/ ]);

@@ -1,44 +1,44 @@
 import React, {Component} from 'react';
-import FontAwesome from 'react-fontawesome';
 
-export default class Tile extends React.Component {
-  handleClick (event) {
-    if (this.props.gameState) {
-      let flag = event.altKey ? true : false;
-      this.props.updateBoard(this.props.pos, flag);
+const Tile = (props) => {
+  let klass, content = null;
+  if (props.tile === 0) {               // bomb
+    if (props.gameState){
+      klass = "tile-unexplored";
+    } else {
+      klass = "tile-bomb";              // exposed when game ends
+      content = "\uD83D\uDCA3";
     }
-  }
-
-  render () {
-    let klass, content = null;
-    if (this.props.tile === 0) {
-      if (this.props.gameState){
-        klass = "tile-unexplored";
-      } else {
-        klass = "tile-bomb";
-        content = "\uD83D\uDCA3";
-      }
-    } else if (this.props.tile === "") {
+  } else if (props.tile === 1) {        // bomb with flag
+    if (props.gameState){
       klass = "tile-flagged";
       content = "\u2691";
-    } else if (this.props.tile === false) {
-      klass = "tile-explored";
-      content = this.props.adjacentBombCount;
-    } else {
-      if (this.props.gameState){
-        klass = "tile-unexplored";
-      } else {
-        klass = "tile-explored";
-        content = this.props.adjacentBombCount;
-      }
+    } else {                            // exposed when game ends
+      klass = "tile-bomb";
+      content = "\uD83D\uDCA3";
     }
-
-    return (
-      <div className={klass} onClick={this.handleClick.bind(this)}>
-         <div className="tile-content">
-           {content}
-         </div>
-      </div>
-    )
+  } else if (props.tile === "") {       // flag, unexplored
+    klass = "tile-flagged";
+    content = "\u2691";
+  } else if (props.tile === false) {    // explored
+    klass = "tile-explored";
+    content = props.adjacentBombCount;
+  } else {                              // unexplored
+    if (props.gameState){
+      klass = "tile-unexplored";
+    } else {                            // exposed when game ends
+      klass = "tile-explored";
+      content = props.adjacentBombCount;
+    }
   }
+
+  return (
+    <div className={klass}>
+       <div className="tile-content" data-tag={props.pos}>
+         {content}
+       </div>
+    </div>
+  )
 }
+
+export default Tile;
