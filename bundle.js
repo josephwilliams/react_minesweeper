@@ -21495,6 +21495,10 @@
 	
 	var _board2 = _interopRequireDefault(_board);
 	
+	var _header_comp = __webpack_require__(179);
+	
+	var _header_comp2 = _interopRequireDefault(_header_comp);
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -21511,10 +21515,10 @@
 	
 	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Game).call(this));
 	
-	    _this.state = { board: new _board2.default(10) };
+	    _this.state = { board: new _board2.default(10), gridSize: 10, numBombs: 10 };
 	    _this.updateBoard = _this.updateBoard.bind(_this);
 	    _this.resetBoard = _this.resetBoard.bind(_this);
-	    _this.adjacentBombCount = _this.state.board.adjacentBombCount.bind(null, _this);
+	    _this.displayMessage = _this.displayMessage.bind(_this);
 	    return _this;
 	  }
 	
@@ -21533,17 +21537,8 @@
 	    }
 	  }, {
 	    key: 'resetBoard',
-	    value: function resetBoard() {
-	      this.setState({ board: new _board2.default(4, 2) });
-	    }
-	  }, {
-	    key: 'showRestart',
-	    value: function showRestart() {
-	      if (!this.state.board.gameState) return _react2.default.createElement(
-	        'p',
-	        { onClick: this.resetBoard },
-	        'restart!'
-	      );
+	    value: function resetBoard(gridSize, numBombs) {
+	      this.setState({ board: new _board2.default(gridSize, numBombs) });
 	    }
 	  }, {
 	    key: 'displayMessage',
@@ -21567,27 +21562,20 @@
 	      return _react2.default.createElement(
 	        'div',
 	        { className: 'game-container' },
-	        _react2.default.createElement(
-	          'h1',
-	          null,
-	          'minesweeper'
-	        ),
-	        _react2.default.createElement(
-	          'p',
-	          { style: { color: "#aaaaaa" } },
-	          'hold alt to place a flag'
-	        ),
-	        _react2.default.createElement(
-	          'p',
-	          null,
-	          this.displayMessage()
-	        ),
+	        _react2.default.createElement(_header_comp2.default, {
+	          displayMessage: this.displayMessage,
+	          resetBoard: this.resetBoard
+	        }),
 	        _react2.default.createElement(_board_comp2.default, {
 	          board: this.state.board,
 	          updateBoard: this.updateBoard,
 	          adjacentBombCount: this.state.board.adjacentBombCount
 	        }),
-	        this.showRestart()
+	        _react2.default.createElement(
+	          'p',
+	          { style: { color: "rgba(64, 50, 50, 0.67)" } },
+	          'hold alt to place a flag'
+	        )
 	      );
 	    }
 	  }]);
@@ -21700,85 +21688,62 @@
 	  value: true
 	});
 	
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-	
 	var _react = __webpack_require__(1);
 	
 	var _react2 = _interopRequireDefault(_react);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-	
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-	
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-	
-	var Tile = function (_React$Component) {
-	  _inherits(Tile, _React$Component);
-	
-	  function Tile() {
-	    _classCallCheck(this, Tile);
-	
-	    return _possibleConstructorReturn(this, Object.getPrototypeOf(Tile).apply(this, arguments));
+	var Tile = function Tile(props) {
+	  var klass = void 0,
+	      content = null;
+	  if (props.tile === 0) {
+	    // bomb
+	    if (props.gameState) {
+	      klass = "tile-unexplored";
+	    } else {
+	      klass = "tile-bomb"; // exposed when game ends
+	      content = "💣";
+	    }
+	  } else if (props.tile === 1) {
+	    // bomb with flag
+	    if (props.gameState) {
+	      klass = "tile-flagged";
+	      content = "⚑";
+	    } else {
+	      // exposed when game ends
+	      klass = "tile-bomb";
+	      content = "💣";
+	    }
+	  } else if (props.tile === "") {
+	    // flag, unexplored
+	    klass = "tile-flagged";
+	    content = "⚑";
+	  } else if (props.tile === false) {
+	    // explored
+	    klass = "tile-explored";
+	    content = props.adjacentBombCount(props.pos);
+	  } else {
+	    // unexplored
+	    if (props.gameState) {
+	      klass = "tile-unexplored";
+	    } else {
+	      // exposed when game ends
+	      klass = "tile-explored";
+	      content = props.adjacentBombCount(props.pos);
+	    }
 	  }
 	
-	  _createClass(Tile, [{
-	    key: "render",
-	    value: function render() {
-	      var klass = void 0,
-	          content = null;
-	      if (this.props.tile === 0) {
-	        // bomb
-	        if (this.props.gameState) {
-	          klass = "tile-unexplored";
-	        } else {
-	          klass = "tile-bomb"; // exposed when game ends
-	          content = "💣";
-	        }
-	      } else if (this.props.tile === 1) {
-	        // bomb with flag
-	        if (this.props.gameState) {
-	          klass = "tile-flagged";
-	          content = "⚑";
-	        } else {
-	          // exposed when game ends
-	          klass = "tile-bomb";
-	          content = "💣";
-	        }
-	      } else if (this.props.tile === "") {
-	        // flag, unexplored
-	        klass = "tile-flagged";
-	        content = "⚑";
-	      } else if (this.props.tile === false) {
-	        // explored
-	        klass = "tile-explored";
-	        content = this.props.adjacentBombCount(this.props.pos);
-	      } else {
-	        // unexplored
-	        if (this.props.gameState) {
-	          klass = "tile-unexplored";
-	        } else {
-	          // exposed when game ends
-	          klass = "tile-explored";
-	          content = this.props.adjacentBombCount(this.props.pos);
-	        }
-	      }
-	
-	      return _react2.default.createElement(
-	        "div",
-	        { className: klass },
-	        _react2.default.createElement(
-	          "div",
-	          { className: "tile-content", "data-tag": this.props.pos },
-	          content
-	        )
-	      );
-	    }
-	  }]);
-	
-	  return Tile;
-	}(_react2.default.Component);
+	  return _react2.default.createElement(
+	    "div",
+	    { className: klass },
+	    _react2.default.createElement(
+	      "div",
+	      { className: "tile-content", "data-tag": props.pos },
+	      content
+	    )
+	  );
+	};
 	
 	exports.default = Tile;
 
@@ -21949,6 +21914,108 @@
 	}();
 	
 	exports.default = Board;
+
+/***/ },
+/* 179 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	var _react = __webpack_require__(1);
+	
+	var _react2 = _interopRequireDefault(_react);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var Header = function (_React$Component) {
+	  _inherits(Header, _React$Component);
+	
+	  function Header(props) {
+	    _classCallCheck(this, Header);
+	
+	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Header).call(this));
+	
+	    _this.state = { gridSize: 10, numBombs: 10 };
+	    return _this;
+	  }
+	
+	  _createClass(Header, [{
+	    key: "updateValue",
+	    value: function updateValue(attribute) {
+	      var _this2 = this;
+	
+	      return function (event) {
+	        return _this2.setState(_defineProperty({}, attribute, Number(event.target.value)));
+	      };
+	    }
+	  }, {
+	    key: "clickReset",
+	    value: function clickReset() {}
+	  }, {
+	    key: "render",
+	    value: function render() {
+	      var _this3 = this;
+	
+	      return _react2.default.createElement(
+	        "div",
+	        { className: "header" },
+	        _react2.default.createElement(
+	          "h1",
+	          null,
+	          "minesweeper"
+	        ),
+	        _react2.default.createElement(
+	          "div",
+	          { className: "message-container" },
+	          this.props.displayMessage()
+	        ),
+	        _react2.default.createElement(
+	          "label",
+	          null,
+	          "grid size",
+	          _react2.default.createElement("input", { type: "number",
+	            onChange: this.updateValue('gridSize'),
+	            value: this.state.gridSize,
+	            placeholder: 10 })
+	        ),
+	        _react2.default.createElement(
+	          "label",
+	          null,
+	          "# bombs",
+	          _react2.default.createElement("input", { type: "number",
+	            onChange: this.updateValue('numBombs'),
+	            value: this.state.numBombs,
+	            placeholder: 10 })
+	        ),
+	        _react2.default.createElement(
+	          "div",
+	          { className: "restart-link", onClick: function onClick() {
+	              return _this3.props.resetBoard(_this3.state.gridSize, _this3.state.numBombs);
+	            } },
+	          "RESTART"
+	        )
+	      );
+	    }
+	  }]);
+	
+	  return Header;
+	}(_react2.default.Component);
+	
+	exports.default = Header;
 
 /***/ }
 /******/ ]);
