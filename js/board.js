@@ -5,14 +5,15 @@ export default class Board {
     this.grid = [];
     this.bombCounts = [];
     this.gameState = true;
+    this.flagCount = 0;
+    this.exploredCount = 0;
     this.message = "let's begin!";
     this.DELTAS = [[-1,-1],[-1,0],[-1,1],[0,-1],
                    [0,1],[1,-1],[1,0],[1,1]];
     this.generateTiles();
     this.randomizeTiles();
     this.setupGrid();
-    this.determineBombCounts();
-    console.log(this.bombCounts);
+    this.getAdjacentBombCounts();
   }
 
   generateTiles () {
@@ -36,38 +37,39 @@ export default class Board {
   setupGrid () {
     let newGrid = [];
     for (let i = 0; i < this.gridSize; i++) {
-      let row = this.grid.slice(i * this.gridSize, i * this.gridSize + this.gridSize - 1);
+      let row = this.grid.slice(i * this.gridSize, i * this.gridSize + this.gridSize);
       newGrid.push(row);
     }
 
     this.grid = newGrid;
   }
 
-  determineBombCounts () {
-    const countGrid = new Array(this.gridSize).fill([]);
-    for (let i = 0; i < this.grid.length; i++) {
-      for (var j = 0; j < this.grid[i].length; j++) {
+  getAdjacentBombCounts () {
+    let tempGrid = [];
+    for (let i = 0; i < this.gridSize; i++) {
+      tempGrid.push([]);
+      for (let j = 0; j < this.gridSize; j++) {
         let bombCount = this.adjacentBombCount([i, j]);
-        countGrid[i][j] = bombCount;
+        tempGrid[i].push(bombCount);
       }
     }
 
-    this.bombCounts = countGrid;
+    this.bombCounts = tempGrid;
   }
 
   adjacentBombCount (pos) {
     let bombCount = 0;
     this.adjacentTiles(pos).forEach(tile => {
-      if (tile === 0)
-      bombCount++;
+      if (tile === 0) {
+        bombCount++;
+      }
     });
 
     return bombCount;
   }
 
   adjacentTiles (pos) {
-    // console.log("pos:"+ pos);
-    const tiles = [];
+    let tiles = [];
     this.DELTAS.forEach(delta => {
       let row = pos[0] + delta[0];
       let col = pos[1] + delta[1];
@@ -88,11 +90,16 @@ export default class Board {
   toggleFlag (pos) {
     let row = pos[0];
     let col = pos[1];
-    this.grid[row][col] = this.grid[row][col] === "" ? true : "";
+    if (this.grid[row][col] === ""){
+      this.flagCount--;
+      this.grid[row][col] = true;
+    } else if (this.grid[row][col] !== false) {
+      this.flagCount++;
+      this.grid[row][col] = "";
+    }
   }
 
   beginExploration (pos) {
-    console.log('pos:' + pos);
     let tile = this.grid[pos[0]][pos[1]];
     if (tile === 0) {
       this.endGame();
@@ -109,26 +116,20 @@ export default class Board {
       }
 
       this.grid[pos[0]][pos[1]] = false; // explored
-      this.message = "[" + this.pos + "] explored!";
-      if (this.adjacentBombCount(pos) === 0 && tile !== 0) {
-        this.adjacentTiles(pos).forEach(tile => {
-          this.explore(tile);
+      this.exploredCount++;
+      if (this.bombCounts[pos[0]][pos[1]] === 0 && tile !== 0) {
+        this.DELTAS.forEach(delta => {
+          let row = pos[0] + delta[0];
+          let col = pos[1] + delta[1];
+          this.explore([row, col]);
         });
       }
     }
   }
 
   won () {
-    let exploredTiles = 0;
-    this.grid.forEach(row => {
-      row.forEach(tile => {
-        if (!tile)
-          exploredTiles++;
-      });
-    });
-
-    let totalTiles = this.gridSize * this.gridSize;
-    return exploredTiles === totalTiles - this.numBombs;
+    let tileCount = this.gridSize * this.gridSize;
+    return (tileCount - this.flagCount - this.exploredCount) === 0;
   }
 
   endGame () {

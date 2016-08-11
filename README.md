@@ -370,13 +370,15 @@ export default class Board {
 While coding my `Tile Component`, I realized that there was an anti-pattern: I was calling `countAdjacentBombs()` multiple times for various tiles on each re-render of the board.  I fixed this by creating a `determineBombCounts()` function in my `Board` class that would store the count of adjacent bombs in a variable `this.bombCounts`.  I could then pass the specific adjacent bomb count of any given tile to it as a prop.
 
 ```javascript
-determineBombCounts () {
-  tempGrid = this.grid;
-  tempGrid.map((row, rowIdx) => {
-    row.map((tile, colIdx) => {
-      tile = adjacentBombCount([rowIdx, colIdx]);
-    });
-  });
+getAdjacentBombCounts () {
+  const tempGrid = [];
+  for (let i = 0; i < this.gridSize; i++) {
+    tempGrid.push([]);
+    for (let j = 0; j < this.gridSize; j++) {
+      let bombCount = this.adjacentBombCount([i, j]);
+      tempGrid[i].push(bombCount);
+    }
+  }
 
   this.bombCounts = tempGrid;
 }
@@ -384,16 +386,16 @@ determineBombCounts () {
 adjacentBombCount (pos) {
   let bombCount = 0;
   this.adjacentTiles(pos).forEach(tile => {
-    if (tile === 0)
-    bombCount++;
+    if (tile === 0) {
+      bombCount++;
+    }
   });
 
   return bombCount;
 }
 
 adjacentTiles (pos) {
-  console.log("pos:"+ pos);
-  const tiles = [];
+  let tiles = [];
   this.DELTAS.forEach(delta => {
     let row = pos[0] + delta[0];
     let col = pos[1] + delta[1];
