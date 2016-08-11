@@ -21987,7 +21987,7 @@
 	          "label",
 	          null,
 	          "grid size",
-	          _react2.default.createElement("input", { type: "number",
+	          _react2.default.createElement("input", { type: "number", min: 1, max: 100,
 	            onChange: this.updateValue('gridSize'),
 	            value: this.state.gridSize,
 	            placeholder: 10 })
@@ -21996,7 +21996,7 @@
 	          "label",
 	          null,
 	          "# bombs",
-	          _react2.default.createElement("input", { type: "number",
+	          _react2.default.createElement("input", { type: "number", min: 1, max: this.state.gridSize,
 	            onChange: this.updateValue('numBombs'),
 	            value: this.state.numBombs,
 	            placeholder: 10 })

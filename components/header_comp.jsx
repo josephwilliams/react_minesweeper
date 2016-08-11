@@ -20,13 +20,13 @@ export default class Header extends React.Component {
         <h1>minesweeper</h1>
         <div className="message-container">{this.props.displayMessage()}</div>
         <label>grid size
-          <input type="number"
+          <input type="number" min={1} max={100}
                  onChange={this.updateValue('gridSize')}
                  value={this.state.gridSize}
                  placeholder={10}/>
         </label>
         <label># bombs
-          <input type="number"
+          <input type="number" min={1} max={this.state.gridSize}
                  onChange={this.updateValue('numBombs')}
                  value={this.state.numBombs}
                  placeholder={10}/>
