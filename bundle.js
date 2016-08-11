@@ -21511,10 +21511,10 @@
 	
 	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Game).call(this));
 	
-	    _this.state = { board: new _board2.default(4, 2) };
+	    _this.state = { board: new _board2.default(10) };
 	    _this.updateBoard = _this.updateBoard.bind(_this);
 	    _this.resetBoard = _this.resetBoard.bind(_this);
-	    _this.adjacentBombCount = _this.state.board.adjacentBombCount.bind(_this);
+	    _this.adjacentBombCount = _this.state.board.adjacentBombCount.bind(null, _this);
 	    return _this;
 	  }
 	
@@ -21584,7 +21584,8 @@
 	        ),
 	        _react2.default.createElement(_board_comp2.default, {
 	          board: this.state.board,
-	          updateBoard: this.updateBoard
+	          updateBoard: this.updateBoard,
+	          adjacentBombCount: this.state.board.adjacentBombCount
 	        }),
 	        this.showRestart()
 	      );
@@ -21654,11 +21655,10 @@
 	
 	      return row.map(function (tile, colIdx) {
 	        var gridSize = _this3.props.board.gridSize;
-	        var adjacentBombCount = _this3.props.board.bombCounts[rowIdx][colIdx];
 	        return _react2.default.createElement(_tile_comp2.default, {
 	          tile: tile,
 	          gameState: _this3.props.board.gameState,
-	          adjacentBombCount: adjacentBombCount,
+	          adjacentBombCount: _this3.props.adjacentBombCount,
 	          pos: [rowIdx, colIdx],
 	          key: rowIdx * gridSize + colIdx
 	        });
@@ -21700,62 +21700,85 @@
 	  value: true
 	});
 	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
 	var _react = __webpack_require__(1);
 	
 	var _react2 = _interopRequireDefault(_react);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	var Tile = function Tile(props) {
-	  var klass = void 0,
-	      content = null;
-	  if (props.tile === 0) {
-	    // bomb
-	    if (props.gameState) {
-	      klass = "tile-unexplored";
-	    } else {
-	      klass = "tile-bomb"; // exposed when game ends
-	      content = "💣";
-	    }
-	  } else if (props.tile === 1) {
-	    // bomb with flag
-	    if (props.gameState) {
-	      klass = "tile-flagged";
-	      content = "⚑";
-	    } else {
-	      // exposed when game ends
-	      klass = "tile-bomb";
-	      content = "💣";
-	    }
-	  } else if (props.tile === "") {
-	    // flag, unexplored
-	    klass = "tile-flagged";
-	    content = "⚑";
-	  } else if (props.tile === false) {
-	    // explored
-	    klass = "tile-explored";
-	    content = props.adjacentBombCount;
-	  } else {
-	    // unexplored
-	    if (props.gameState) {
-	      klass = "tile-unexplored";
-	    } else {
-	      // exposed when game ends
-	      klass = "tile-explored";
-	      content = props.adjacentBombCount;
-	    }
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var Tile = function (_React$Component) {
+	  _inherits(Tile, _React$Component);
+	
+	  function Tile() {
+	    _classCallCheck(this, Tile);
+	
+	    return _possibleConstructorReturn(this, Object.getPrototypeOf(Tile).apply(this, arguments));
 	  }
 	
-	  return _react2.default.createElement(
-	    "div",
-	    { className: klass },
-	    _react2.default.createElement(
-	      "div",
-	      { className: "tile-content", "data-tag": props.pos },
-	      content
-	    )
-	  );
-	};
+	  _createClass(Tile, [{
+	    key: "render",
+	    value: function render() {
+	      var klass = void 0,
+	          content = null;
+	      if (this.props.tile === 0) {
+	        // bomb
+	        if (this.props.gameState) {
+	          klass = "tile-unexplored";
+	        } else {
+	          klass = "tile-bomb"; // exposed when game ends
+	          content = "💣";
+	        }
+	      } else if (this.props.tile === 1) {
+	        // bomb with flag
+	        if (this.props.gameState) {
+	          klass = "tile-flagged";
+	          content = "⚑";
+	        } else {
+	          // exposed when game ends
+	          klass = "tile-bomb";
+	          content = "💣";
+	        }
+	      } else if (this.props.tile === "") {
+	        // flag, unexplored
+	        klass = "tile-flagged";
+	        content = "⚑";
+	      } else if (this.props.tile === false) {
+	        // explored
+	        klass = "tile-explored";
+	        content = this.props.adjacentBombCount(this.props.pos);
+	      } else {
+	        // unexplored
+	        if (this.props.gameState) {
+	          klass = "tile-unexplored";
+	        } else {
+	          // exposed when game ends
+	          klass = "tile-explored";
+	          content = this.props.adjacentBombCount(this.props.pos);
+	        }
+	      }
+	
+	      return _react2.default.createElement(
+	        "div",
+	        { className: klass },
+	        _react2.default.createElement(
+	          "div",
+	          { className: "tile-content", "data-tag": this.props.pos },
+	          content
+	        )
+	      );
+	    }
+	  }]);
+	
+	  return Tile;
+	}(_react2.default.Component);
 	
 	exports.default = Tile;
 
@@ -21788,7 +21811,7 @@
 	    this.generateTiles();
 	    this.randomizeTiles();
 	    this.setupGrid();
-	    this.getAdjacentBombCounts();
+	    this.adjacentBombCount = this.adjacentBombCount.bind(this);
 	  }
 	
 	  _createClass(Board, [{
@@ -21823,25 +21846,11 @@
 	      this.grid = newGrid;
 	    }
 	  }, {
-	    key: "getAdjacentBombCounts",
-	    value: function getAdjacentBombCounts() {
-	      var tempGrid = [];
-	      for (var i = 0; i < this.gridSize; i++) {
-	        tempGrid.push([]);
-	        for (var j = 0; j < this.gridSize; j++) {
-	          var bombCount = this.adjacentBombCount([i, j]);
-	          tempGrid[i].push(bombCount);
-	        }
-	      }
-	
-	      this.bombCounts = tempGrid;
-	    }
-	  }, {
 	    key: "adjacentBombCount",
 	    value: function adjacentBombCount(pos) {
 	      var bombCount = 0;
 	      this.adjacentTiles(pos).forEach(function (tile) {
-	        if (tile === 0) {
+	        if (tile === 0 || tile === 1) {
 	          bombCount++;
 	        }
 	      });
@@ -21914,7 +21923,7 @@
 	
 	        this.grid[pos[0]][pos[1]] = false; // explored
 	        this.exploredCount++;
-	        if (this.bombCounts[pos[0]][pos[1]] === 0 && tile !== 0) {
+	        if (this.adjacentBombCount(pos) === 0 && tile !== 0) {
 	          this.DELTAS.forEach(function (delta) {
 	            var row = pos[0] + delta[0];
 	            var col = pos[1] + delta[1];
@@ -21927,7 +21936,7 @@
 	    key: "won",
 	    value: function won() {
 	      var tileCount = this.gridSize * this.gridSize;
-	      return tileCount - this.correctFlagCount - this.exploredCount === 0 || tileCount - this.exploredCount === this.numBombs || this.correctFlagCount === this.numBombs;
+	      return tileCount - this.correctFlagCount - this.exploredCount === 0 || tileCount - this.exploredCount === this.numBombs;
 	    }
 	  }, {
 	    key: "endGame",

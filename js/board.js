@@ -12,7 +12,7 @@ export default class Board {
     this.generateTiles();
     this.randomizeTiles();
     this.setupGrid();
-    this.getAdjacentBombCounts();
+    this.adjacentBombCount = this.adjacentBombCount.bind(this);
   }
 
   generateTiles () {
@@ -43,23 +43,10 @@ export default class Board {
     this.grid = newGrid;
   }
 
-  getAdjacentBombCounts () {
-    let tempGrid = [];
-    for (let i = 0; i < this.gridSize; i++) {
-      tempGrid.push([]);
-      for (let j = 0; j < this.gridSize; j++) {
-        let bombCount = this.adjacentBombCount([i, j]);
-        tempGrid[i].push(bombCount);
-      }
-    }
-
-    this.bombCounts = tempGrid;
-  }
-
   adjacentBombCount (pos) {
     let bombCount = 0;
     this.adjacentTiles(pos).forEach(tile => {
-      if (tile === 0) {
+      if (tile === 0 || tile === 1) {
         bombCount++;
       }
     });
@@ -120,7 +107,7 @@ export default class Board {
 
       this.grid[pos[0]][pos[1]] = false; // explored
       this.exploredCount++;
-      if (this.bombCounts[pos[0]][pos[1]] === 0 && tile !== 0) {
+      if (this.adjacentBombCount(pos) === 0 && tile !== 0) {
         this.DELTAS.forEach(delta => {
           let row = pos[0] + delta[0];
           let col = pos[1] + delta[1];
@@ -133,8 +120,7 @@ export default class Board {
   won () {
     let tileCount = this.gridSize * this.gridSize;
     return (tileCount - this.correctFlagCount - this.exploredCount) === 0 ||
-           (tileCount - this.exploredCount === this.numBombs) ||
-           (this.correctFlagCount === this.numBombs);
+           (tileCount - this.exploredCount === this.numBombs);
   }
 
   endGame () {

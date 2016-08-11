@@ -5,10 +5,10 @@ import Board from '../js/board.js';
 export default class Game extends React.Component {
   constructor (props) {
     super();
-    this.state = { board: new Board(4, 2) };
+    this.state = { board: new Board(10) };
     this.updateBoard = this.updateBoard.bind(this);
     this.resetBoard = this.resetBoard.bind(this);
-    this.adjacentBombCount = this.state.board.adjacentBombCount.bind(this);
+    this.adjacentBombCount = this.state.board.adjacentBombCount.bind(null, this);
   }
 
   updateBoard (pos, flagged) {
@@ -59,6 +59,7 @@ export default class Game extends React.Component {
           <BoardComponent
             board={this.state.board}
             updateBoard={this.updateBoard}
+            adjacentBombCount={this.state.board.adjacentBombCount}
           />
         {this.showRestart()}
       </div>
