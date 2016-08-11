@@ -26,7 +26,7 @@ export default class Header extends React.Component {
                  placeholder={10}/>
         </label>
         <label># bombs
-          <input type="number" min={1} max={this.state.gridSize}
+          <input type="number" min={1} max={Math.pow(this.state.gridSize, 2)}
                  onChange={this.updateValue('numBombs')}
                  value={this.state.numBombs}
                  placeholder={10}/>
