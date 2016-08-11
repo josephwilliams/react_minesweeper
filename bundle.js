@@ -21766,7 +21766,7 @@
 	    this.grid = [];
 	    this.bombCounts = []; // mapping of adjacent bomb counts of each tile
 	    this.gameState = true; // if game is still ongoing
-	    this.correctflagCount = 0; // flagged bomb tile count
+	    this.correctFlagCount = 0; // flagged bomb tile count
 	    this.exploredCount = 0; // explored tile count
 	    this.message = "let's begin!";
 	    this.DELTAS = [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]];
@@ -21911,6 +21911,7 @@
 	  }, {
 	    key: "won",
 	    value: function won() {
+	      console.log('good flags: ' + this.correctFlagCount);
 	      var tileCount = this.gridSize * this.gridSize;
 	      return tileCount - this.correctFlagCount - this.exploredCount === 0 || tileCount - this.exploredCount === this.numBombs || this.correctFlagCount === this.numBombs;
 	    }
