@@ -21537,17 +21537,33 @@
 	      this.setState({ board: new _board2.default(4, 2) });
 	    }
 	  }, {
-	    key: 'render',
-	    value: function render() {
-	      var restartOption = void 0;
+	    key: 'showRestart',
+	    value: function showRestart() {
+	      if (!this.state.board.gameState) return _react2.default.createElement(
+	        'p',
+	        { onClick: this.resetBoard },
+	        'restart!'
+	      );
+	    }
+	  }, {
+	    key: 'displayMessage',
+	    value: function displayMessage() {
+	      var message = void 0;
 	      if (!this.state.board.gameState) {
-	        restartOption = _react2.default.createElement(
-	          'p',
-	          { onClick: this.resetBoard },
-	          'restart!'
-	        );
+	        if (this.state.board.won()) {
+	          message = "you win!";
+	        } else {
+	          message = "you lose!";
+	        }
+	      } else {
+	        message = "here we go!";
 	      }
 	
+	      return message;
+	    }
+	  }, {
+	    key: 'render',
+	    value: function render() {
 	      return _react2.default.createElement(
 	        'div',
 	        { className: 'game-container' },
@@ -21564,13 +21580,13 @@
 	        _react2.default.createElement(
 	          'p',
 	          null,
-	          this.state.board.message
+	          this.displayMessage()
 	        ),
 	        _react2.default.createElement(_board_comp2.default, {
 	          board: this.state.board,
 	          updateBoard: this.updateBoard
 	        }),
-	        restartOption
+	        this.showRestart()
 	      );
 	    }
 	  }]);
@@ -21768,7 +21784,6 @@
 	    this.gameState = true; // if game is still ongoing
 	    this.correctFlagCount = 0; // flagged bomb tile count
 	    this.exploredCount = 0; // explored tile count
-	    this.message = "let's begin!";
 	    this.DELTAS = [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]];
 	    this.generateTiles();
 	    this.randomizeTiles();
@@ -21911,14 +21926,12 @@
 	  }, {
 	    key: "won",
 	    value: function won() {
-	      console.log('good flags: ' + this.correctFlagCount);
 	      var tileCount = this.gridSize * this.gridSize;
 	      return tileCount - this.correctFlagCount - this.exploredCount === 0 || tileCount - this.exploredCount === this.numBombs || this.correctFlagCount === this.numBombs;
 	    }
 	  }, {
 	    key: "endGame",
 	    value: function endGame() {
-	      this.message = this.won() ? "you win!" : "you lose!";
 	      this.gameState = false;
 	    }
 	  }]);

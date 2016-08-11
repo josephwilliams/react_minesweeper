@@ -7,7 +7,6 @@ export default class Board {
     this.gameState = true;      // if game is still ongoing
     this.correctFlagCount = 0;  // flagged bomb tile count
     this.exploredCount = 0;     // explored tile count
-    this.message = "let's begin!";
     this.DELTAS = [[-1,-1],[-1,0],[-1,1],[0,-1],
                    [0,1],[1,-1],[1,0],[1,1]];
     this.generateTiles();
@@ -132,7 +131,6 @@ export default class Board {
   }
 
   won () {
-    console.log('good flags: ' + this.correctFlagCount);
     let tileCount = this.gridSize * this.gridSize;
     return (tileCount - this.correctFlagCount - this.exploredCount) === 0 ||
            (tileCount - this.exploredCount === this.numBombs) ||
@@ -140,7 +138,6 @@ export default class Board {
   }
 
   endGame () {
-    this.message = this.won() ? "you win!" : "you lose!";
     this.gameState = false;
   }
 }
